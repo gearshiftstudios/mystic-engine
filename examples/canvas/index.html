@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html>
+  	<head>
+    	<meta charset='utf-8'>
+    	<meta name='viewport' content='width=device-width'>
+    	<title>repl.it</title>
+    	<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+
+		<style>
+			body {
+				margin: 0;
+
+				width: 100%;
+				height: 100%;
+
+				background-color: darkslategrey;
+				overflow: hidden;
+			}
+		</style>
+		
+		<script type='module'>
+			import * as reps from '../../scripts/rep.module.js'
+
+			reps.canvas.create( { id: 'test', width: window.innerWidth, height: window.innerHeight } ).ready( ( canvas, ctx ) => {
+				const position = {
+					x: 25,
+					y: 40,
+				}
+
+				const render = () => {
+					position.x += 0.1
+					position.y += 0.1
+
+					ctx.clearRect( 0, 0, canvas.offsetWidth, canvas.offsetHeight )
+
+					ctx.fillStyle = '#0000ff'
+					ctx.fillRect( 0, 0, 50, 50 )
+
+					ctx.fillStyle = '#ff00ff'
+					ctx.fillRect( position.x, position.y, 150, 75 )
+
+					requestAnimationFrame( render )
+				}
+
+				render()
+			} )
+		</script>
+  	</head>
+  	<body>
+  	</body>
+</html>

@@ -1,0 +1,45 @@
+engine-logo-text-lt {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    margin: 1vh;
+    display: inline;
+    font-size: 3vh;
+    font-family: 'Montserrat';
+    font-weight: bold;
+    background: rgba( 0, 0, 0, 0.7 );
+    padding: 0.5vh 1vh 0.5vh 1vh;
+    border-radius: 1vh;
+    box-shadow: 0 0 1vh darkgrey;
+    animation: engine-logo-text-lt--anim 1s forwards;
+    transition: 0.5s;
+    z-index: 99;
+    pointer-events: auto;
+}
+engine-logo-text-lt name {
+    display: inline;
+    color: white;
+    transition: 0.5s;
+}
+engine-logo-text-lt version {
+    display: inline;
+    color: rgb( 100, 100, 100 );
+    transition: 0.5s;
+}
+engine-logo-text-lt:hover name {
+    color: turquoise;
+}
+engine-logo-text-lt:hover version {
+    color: white;
+    text-shadow: 0 0 1vh turquoise;
+}
+
+@keyframes engine-logo-text-lt--anim {
+    from {
+        margin: 0vh 0vh 1vh 1vh;
+        box-shadow: 0 0 0vh rgba( 0, 0, 0, 0.4 );
+    } to {
+        margin: 0vh 0vh 2vh 2vh;
+        box-shadow: -1vh 1vh 1vh rgba( 0, 0, 0, 0.4 );
+    }
+}

@@ -1,0 +1,26 @@
+{
+	"mys": "r",
+	
+	"general": {
+		"name": "Mystic Engine",
+		"author": "Nikolas Karinja",
+		"version": 0.1,
+		"alpha": true,
+		"distributable": false,
+		"dateLastDistributed": null,
+		"minified": false
+	},
+	"threejs": {
+	 	"modified": true,
+		"release": 124,
+		"author": "mrdoob"
+	},
+	"muid": {
+		"idType": "nl.mixed",
+		"idLength": 11,
+		"subClassSeparator": "ϟ",
+		"classSeparator": ".",
+		"idSeparator": "#",
+		"numberSeparator": "@"
+	}
+}
