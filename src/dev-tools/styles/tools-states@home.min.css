@@ -1,0 +1,78 @@
+state#home background {
+  background-image: url("../../assets/backgrounds/mountains.low-poly.jpg");
+  -webkit-animation: state-home-background--anim 10s infinite;
+          animation: state-home-background--anim 10s infinite;
+}
+
+state#home image-rb#studio-logo {
+  width: 250px;
+  height: 82px;
+}
+
+state#home textbox-lt#welcome {
+  max-width: 430px;
+  margin: 62.5px 0vh 0vh 10px;
+  -webkit-animation: state-home-textbox-lt-welcome--anim 1s forwards;
+          animation: state-home-textbox-lt-welcome--anim 1s forwards;
+}
+
+state#home textbox-lt#welcome:hover {
+  padding: 10px 15px 10px 15px;
+}
+
+@-webkit-keyframes state-home-textbox-lt-welcome--anim {
+  from {
+    margin: 72.5px 0vh 0vh 5px;
+    -webkit-box-shadow: 0 0 0vh rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0vh rgba(0, 0, 0, 0.4);
+  }
+  to {
+    margin: 62.5px 0vh 0vh 10px;
+    -webkit-box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.4);
+            box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes state-home-textbox-lt-welcome--anim {
+  from {
+    margin: 72.5px 0vh 0vh 5px;
+    -webkit-box-shadow: 0 0 0vh rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0vh rgba(0, 0, 0, 0.4);
+  }
+  to {
+    margin: 62.5px 0vh 0vh 10px;
+    -webkit-box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.4);
+            box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@-webkit-keyframes state-home-background--anim {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.1);
+            transform: scale(1.1);
+  }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+
+@keyframes state-home-background--anim {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.1);
+            transform: scale(1.1);
+  }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+/*# sourceMappingURL=tools-states@home.min.css.map */

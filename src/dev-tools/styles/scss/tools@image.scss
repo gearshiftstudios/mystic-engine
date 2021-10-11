@@ -1,0 +1,16 @@
+image {
+    &-lt, &-rt, &-lb, &-rb {
+        position: absolute;
+
+        background-color: transparent;
+        background-image: url( '../../assets/logos/mystic.studios.slim.trimmed.png' );
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+    }
+
+    &-lt { left: 0; top: 0; }
+    &-rt { right: 0; top: 0; }
+    &-lb { left: 0; bottom: 0; }
+    &-rb { right: 0; bottom: 0; }
+}

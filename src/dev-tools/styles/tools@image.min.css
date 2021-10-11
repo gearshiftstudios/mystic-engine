@@ -1,0 +1,29 @@
+image-lt, image-rt, image-lb, image-rb {
+  position: absolute;
+  background-color: transparent;
+  background-image: url("../../assets/logos/mystic.studios.slim.trimmed.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+image-lt {
+  left: 0;
+  top: 0;
+}
+
+image-rt {
+  right: 0;
+  top: 0;
+}
+
+image-lb {
+  left: 0;
+  bottom: 0;
+}
+
+image-rb {
+  right: 0;
+  bottom: 0;
+}
+/*# sourceMappingURL=tools@image.min.css.map */

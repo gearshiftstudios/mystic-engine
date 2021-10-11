@@ -1,0 +1,54 @@
+state {
+    &#home {
+        & background {
+            background-image: url( '../../assets/backgrounds/mountains.low-poly.jpg' );
+        
+            animation: state-home-background--anim 10s infinite;
+        }
+
+        & image {
+            &-rb {
+                &#studio-logo {
+                    width: 250px;
+                    height: 82px;
+                }
+            }
+        }
+
+        & textbox {
+            &-lt {
+                &#welcome {
+                    max-width: 430px;
+        
+                    margin: 62.5px 0vh 0vh 10px;
+
+                    animation: state-home-textbox-lt-welcome--anim 1s forwards;
+        
+                    &:hover {
+                        padding: 10px 15px 10px 15px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes state-home-textbox-lt-welcome--anim {
+    from {
+        margin: 72.5px 0vh 0vh 5px;
+        box-shadow: 0 0 0vh rgba( 0, 0, 0, 0.4 );
+    } to {
+        margin: 62.5px 0vh 0vh 10px;
+        box-shadow: -5px 5px 5px rgba( 0, 0, 0, 0.4 );
+    }
+}
+
+@keyframes state-home-background--anim {
+    0% {
+        transform: scale( 1 );
+    } 50% {
+        transform: scale( 1.1 );
+    } 100% {
+        transform: scale( 1 );
+    }
+}
