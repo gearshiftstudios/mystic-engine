@@ -6,6 +6,8 @@ import { handler_chunk } from './chunks.module.js'
 
 class Handler_Map {
     constructor () {
+        this.trees = {}
+
         this.settings = {
             size: {
                 width: 256,
@@ -32,46 +34,45 @@ class Handler_Map {
     generateMacro () {
         this.generateValues( 2, 2, 0.6, 'none', MAPGROUP.size.width, MAPGROUP.size.width, 0.5 )
             .then( values => {
-                MAPGROUP.regenerate( values.heightMap, values.biomeMap )
-                    .then( () => {
-                        this.loadTrees().then( trees => {
-                            MAPGROUP.trees = trees
+                MAPGROUP.regenerate( values.heightMap, values.biomeMap ).then( () => {
+                    this.loadTrees().then( trees => {
                             
-                            console.log( MAPGROUP.trees )
-                        } )
                     } )
+                } )
             } )
     }
 
     loadTrees () {
         return new Promise ( resolve => {
-            const trees = {
-                'tundra': {},
-                'taiga': {},
-                'temp-decid': {},
-            }
-
             /* load in temperate deciduous trees */ 
-            this.loadTreeLOD( './objects/trees/temp-decid.tall.mobjx' )
-                .then( tallLOD => {
-                    trees[ 'temp-decid' ][ 'tall' ] = tallLOD
 
-                    this.loadTreeLOD( './objects/trees/temp-decid.moderate.mobjx' )
-                        .then( moderateLOD => {
-                            trees[ 'temp-decid' ][ 'moderate' ] = moderateLOD
-
-                            resolve( trees )
-                        } )
+            this.loadTreeLOD( 'temp-decid.tall' ).then( () => {
+                this.loadTreeLOD( 'temp-decid.moderate' ).then( () => {
+                    resolve()
                 } )
+            } )
         } )
     }
 
     loadTreeLOD ( file ) {
         return new Promise ( resolve => {
-            engine.file.mystic.retrieve( file )
-                .then( data => {
-                    m3d.parser.mobjx.parse( data ).then( lod => resolve( lod ) )
+            engine.file.mystic.retrieve( `./objects/trees/${ file }.mobjx` ).then( data => { // retrieve the data from the file
+                m3d.parser.mobjx.parse( data ).then( lod => { // parse the data retrieved from file
+                    /* get the tree's info */
+
+                    file = file.split( '.' ) // separate the biome and height
+
+                    const biome = file[ 0 ], // retrieve biome
+                        height = file[ 1 ] // retrieve height
+
+                    /* export LOD */ 
+                    if ( !this.trees[ biome ] ) this.trees[ biome ] = {} // check if the sub-object with the name of the biome exists
+
+                    this.trees[ biome ][ height ] = lod // export LOD to its biome and height
+
+                    resolve()
                 } )
+            } )
         } )
     }
 
