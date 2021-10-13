@@ -38457,7 +38457,10 @@ function Handler_M3D ( category ) {
 	function Map ( width, height, elevMax = 20 ) {
 		Object3D.call( this )
 
+		this.animateWater = false
 		this.chunks = []
+		this.initialized = false
+		this.instances = {}
 		this.inScene = false
 		this.type = 'Map'
 
@@ -38482,7 +38485,7 @@ function Handler_M3D ( category ) {
 			const scope = this
 
 			return new Promise( ( resolve, reject ) => {
-				const planeGeo = new PlaneGeometry( width, height, width, height )
+				const planeGeo = new PlaneBufferGeometry( width + 2, height + 2, width + 2, height + 2 )
 
 			function scaleOut ( val, smin, smax, emin, emax ) {
 				const tx = ( val - smin ) / ( smax - smin )
@@ -38514,6 +38517,9 @@ function Handler_M3D ( category ) {
 			let tileNum = 0
 
 			planeGeo.faces.forEach( ( f, ixf ) => {
+				f.isCliff = false
+				f.isCoast = false
+
 				/* get vertices and the min & max points of the face */ 
 				const face = {
 					a: planeGeo.vertices[ f.a ],
@@ -38557,62 +38563,82 @@ function Handler_M3D ( category ) {
 						f.color.set( 0x8a9488 )
 						break
 					case 1:
-						f.color.set( 0x0a2904 )
+						f.color.set( 0x214010 )
 						break
 					case 2:
-						f.color.set( 0x1a4a00 )
+						f.color.set( 0x174000 )
 						break
 					case 3:
-						f.color.set( 0x125c04 )
+						f.color.set( 0x174000 )
 						break
 					case 4:
-						f.color.set( 0x124a07 )
+						f.color.set( 0x102e00 )
 						break
 					case 5:
-						f.color.set( 0xdbcc7d )
+						f.color.set( 0xeecc44 )
 						break
 					case 6:
-						f.color.set( 0xcad66b )
+						f.color.set( 0x4a4924 )
 						break
 					case 7:
-						f.color.set( 0x0da633 ) // 0xd1a128 tree leaves
+						f.color.set( 0x29751a ) // 0xd1a128 tree leaves
 						break
 					case 8:
-						f.color.set( 0x29751a )
+						f.color.set( 0x0d2600 )
 						break
 				}
-
-				// Store some information about them for below
-				var dot = maxVec.dot( minVec )
-				var lengthA = maxVec.length()
-				var lengthB = minVec.length()
-
-				// Now to find the angle
-				var angle = Math.acos( dot / ( lengthA * lengthB ) ) * 180 / Math.PI // Theta = 3.06 radians or 175.87 degrees
 				
 				/* assign colors based upon the elev of points within face */
 				if ( min >= this.elev.min && min < this.elev.min + 0.75 ) {
-					if ( f.biome == 0 ) f.color.set( 0x5c5c5c ) // cliff
-					else f.color.set( 0xeecc44 ) // shore
+					if ( f.biome == 0 ) {
+						f.isCliff = true
+
+						f.color.set( 0x5c5c5c ) // cliff
+					} else {
+						f.isCoast = true
+
+						f.color.set( 0xb8a763 ) // shore
+					}
 				}
-				if ( max >= this.elev.min + 7.5 && min < this.elev.min + 7.5 ) f.color.set( 0x452b01 ) // mesa-side
+				if ( max >= this.elev.min + 7.5 && min < this.elev.min + 7.5 ) {
+					f.isCliff = true
+
+					f.color.set( 0x452b01 ) // mesa-side
+				}
 
 				// if ( max < this.elev.min + 7.5 ) {
 				// 	if ( angle > 2 ) f.color.set( 0x5c5c5c ) // cliff
 				// }
 
-				if ( min == this.elev.min && max == this.elev.min ) f.color.set( 0x205956 ) // sea
+				if ( min == this.elev.min && max == this.elev.min ) {
+					f.materialIndex = 1
+
+					// planeGeo.vertices[ f.a ] = -10
+					// planeGeo.vertices[ f.b ] = -10
+					// planeGeo.vertices[ f.c ] = -10
+
+					// f.color.set( 0x205956 ) // sea
+				}
 			} )
 
 				planeGeo.updateColors()
         		planeGeo.updateVertices()
 
-				this.mesh = create.mesh( planeGeo, new MeshStandardMaterial( { 
-					flatShading: true, 
-					vertexColors: VertexColors 
-				} ) ).store().retrieve()
+				this.mesh = create.mesh( planeGeo, [
+					new MeshStandardMaterial( { 
+						flatShading: true, 
+						vertexColors: VertexColors 
+					} ),
+					new MeshStandardMaterial( { 
+						color: 0xffffff,
+                    	opacity: 0,
+                    	transparent: true,
+					} ),
+				] ).store().retrieve()
 
 				this.mesh.rotation.x = -90 * Math.PI / 180
+				this.mesh.castShadow = true
+				this.mesh.receiveShadow = true
 
 				if ( scene ) {
 					scene.add( this.mesh )
@@ -38705,6 +38731,14 @@ function Handler_M3D ( category ) {
 		},
 
 		regenerate: async function ( heightMap, biomeMap, scene ) {
+			if ( this.instances.trees ) {
+                for ( const t in this.instances.trees ) {
+                    for ( const _t in this.instances.trees[ t ] ) {
+                        this.remove( this.instances.trees[ t ][ _t ] )
+                    }
+                }
+            }
+
 			if ( this.mesh != null ) {
 				if ( this.inScene == true && scene && scene.isScene ) scene.remove( this.mesh )
 				else this.remove( this.mesh )

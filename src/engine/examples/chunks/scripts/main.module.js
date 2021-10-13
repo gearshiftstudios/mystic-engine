@@ -8,6 +8,7 @@ import * as handler_map from './map.module.js'
 
 class Program {
     constructor () {
+        this.count = 0
         this.gui = new m3d_gui.class()
         this.lod = new engine.m3d.lod()
         this.map = handler_map.group
@@ -44,21 +45,59 @@ class Program {
 
     render () {
         this.environment.render()
+
+        if ( this.map && this.map.initialized ) this.map.water.geometry.attributes.position.needsUpdate = true
+
+        // if ( this.map.water ) this.map.water.material.uniforms[ 'time' ].value += 0.25 / 60.0
+
+        // if ( this.map && this.map.initialized ) {
+        //     for ( let i = 0; i < this.map.waterSharingVertices.length; i++ ) {
+        //         var z = +this.map.water.geometry.vertices[ i ].z
+        //         this.map.water.geometry.vertices[ i ].z = Math.sin(( i + this.count * 0.02)) * (this.map.water.geometry.vertices[i].tempZ - (this.map.water.geometry.vertices[i].tempZ* 0.6))
+        //         this.map.mesh.geometry.vertices[ i ].z = this.map.water.geometry.vertices[ i ].z
+        //         this.map.mesh.geometry.verticesNeedUpdate = true
+          
+        //         this.count += 0.1
+        //     }
+        // }
     }
 
     async init () {
         engine.core.init()
 
+        this.stats.showPanel( 0 )
+
         document.body.isShowing = true
+        document.body.appendChild( this.stats.dom )
 
         window.onresize = () => this.environment.resize()
 
         this.environment.scene.add( this.map )
 
-        const hemiLight = engine.m3d.create.light( 'hemisphere', 0xffffff, 0x080820, 1 ).store().retrieve()
-        hemiLight.position.set( 0, 100, 0 )
+        var hemiLight = new engine.m3d.light.hemisphere( 0xffffff, 0xffffff, 0.6 );
+            hemiLight.color.setHSL( 0.6, 0.75, 0.5 );
+            hemiLight.groundColor.setHSL( 0.095, 0.5, 0.5 );
+            hemiLight.position.set( 0, 500, 0 );
+            this.environment.scene.add( hemiLight );
 
-        this.environment.scene.add( hemiLight )
+            var dirLight = new engine.m3d.light.directional( 0xffffff, 1 )
+            dirLight.position.set( -250, 250, 250 )
+
+            dirLight.castShadow = true
+            dirLight.shadow.camera.near = 0.000001
+            dirLight.shadow.camera.far = 600
+            dirLight.shadow.camera.right = 300
+            dirLight.shadow.camera.left = -300
+            dirLight.shadow.camera.top = 300
+            dirLight.shadow.camera.bottom = -300
+            dirLight.shadow.mapSize.width = 100000
+            dirLight.shadow.mapSize.height = 100000
+
+            this.environment.scene.add( dirLight )
+            this.environment.scene.add( dirLight.target )
+
+            const dirLightHelper = new engine.m3d.helper.light.directional( dirLight )
+            this.environment.scene.add( dirLightHelper )
 
         const textureLoader = new engine.m3d.loader.texture(),
 

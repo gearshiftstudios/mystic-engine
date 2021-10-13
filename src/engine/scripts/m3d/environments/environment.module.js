@@ -26,13 +26,13 @@ class Environment {
         aspect = window.innerWidth / window.innerHeight,
         frustumSize = 1000,
 
-        // camera = new defaults.camera.type(
-        //     defaults.camera.fov, 
-        //     container.isDOMElement ? container.offsetWidth / container.offsetHeight : document.body.offsetWidth / document.body.offsetHeight, 
-        //     defaults.camera.near, 
-        //     defaults.camera.far 
-        // ) 
-        camera = new reps.m3d.camera.flat( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -2000, 2000 )
+        camera = new defaults.camera.type(
+            defaults.camera.fov, 
+            container.isDOMElement ? container.offsetWidth / container.offsetHeight : document.body.offsetWidth / document.body.offsetHeight, 
+            defaults.camera.near, 
+            defaults.camera.far 
+        ) 
+        // camera = new reps.m3d.camera.flat( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -2000, 2000 )
         
         this.alwaysResize = !options ? defaults.alwaysResize : !options.alwaysResize ? defaults.alwaysResize : typeof options.alwaysResize == 'boolean' ? options.alwaysResize : defaults.alwaysResize
         this.camera = !options ? camera : !options.camera ? camera : options.camera.isCamera ? options.camera : camera
@@ -56,28 +56,30 @@ class Environment {
         this.renderers.webgl.setPixelRatio( window.devicePixelRatio )
         this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
         this.renderers.webgl.outputEncoding = reps.m3d.encoding.gamma
-        this.renderers.webgl.gammaFactor = 2
+        this.renderers.webgl.gammaFactor = 2.2
         this.renderers.webgl.shadowMap.enabled = true
+        this.renderers.webgl.shadowMap.type = reps.m3d.shadow.map.pcfSoft
         this.renderers.webgl.domElement.style.pointerEvents = 'auto'
 
         this.container.appendChild( this.renderers.webgl.domElement )
 
         this.controls = !options ? defaults.controls : !options.controls ? defaults.controls  : options.controls.isControls ? options.controls : defaults.controls 
+        this.controls.shouldUpdate = true
         this.controls.enableDamping = true
         this.controls.dampingFactor = 0.035
-        this.controls.screenSpacePanning = true
+        this.controls.screenSpacePanning = false
         this.controls.rotateSpeed = 1
-        this.controls.zoomSpeed = 1
+        this.controls.zoomSpeed = 0.3
         this.controls.minDistance = 10
         this.controls.maxDistance = 300
         this.controls.enablePan = true
 
-        this.camera.position.set( 225.38, 281.34, 288.30 ) // perspective - 194.6, 398.8, 310.9
+        this.camera.position.set( 194.6, 398.8, 310.9 ) // ortho - 225.38, 281.34, 288.30
         this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
-        this.camera.zoom = 1.8506178062217096 // perspective - don't alter
+        // this.camera.zoom = 1.8506178062217096 // perspective - don't alter
         this.camera.updateMatrixWorld()
 
-		this.controls.target = new reps.m3d.vec3( 1.77, 5, 12.37 ) // perspective - 69.1, 5, 132.9
+		this.controls.target = new reps.m3d.vec3( 69.1, 5, 132.9 ) // ortho - 1.77, 5, 12.37 
 
         this.scene.background = new reps.m3d.color( 0xffffff )
 
@@ -91,7 +93,7 @@ class Environment {
             this.renderers.webgl.render( this.scene, this.camera )
             this.renderers.css.render( this.scene, this.camera )
 
-            if ( this.controls.enabled ) this.controls.update()
+            if ( this.controls.shouldUpdate ) this.controls.update()
         }
     }
 
