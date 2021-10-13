@@ -85,11 +85,11 @@ class Program {
 
             dirLight.castShadow = true
             dirLight.shadow.camera.near = 0.000001
-            dirLight.shadow.camera.far = 600
-            dirLight.shadow.camera.right = 300
-            dirLight.shadow.camera.left = -300
-            dirLight.shadow.camera.top = 300
-            dirLight.shadow.camera.bottom = -300
+            dirLight.shadow.camera.far = 2000
+            dirLight.shadow.camera.right = 500
+            dirLight.shadow.camera.left = -500
+            dirLight.shadow.camera.top = 500
+            dirLight.shadow.camera.bottom = -500
             dirLight.shadow.mapSize.width = 100000
             dirLight.shadow.mapSize.height = 100000
 
