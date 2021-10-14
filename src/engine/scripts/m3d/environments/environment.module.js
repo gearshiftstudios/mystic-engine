@@ -6,7 +6,11 @@ import * as renderers_css from '../renderers/css.module.js'
 import * as m3d_controls from '../controls/orbit.module.js'
 
 class Environment {
-    constructor ( container = document.body, options = {} ) {	
+    constructor ( container = document.body, options = {} ) {
+        this.loader = {
+            texture: new reps.m3d.loader.texture()
+        }
+
         const defaults = {
             alwaysResize: false,
 
@@ -81,11 +85,45 @@ class Environment {
 
 		this.controls.target = new reps.m3d.vec3( 69.1, 5, 132.9 ) // ortho - 1.77, 5, 12.37 
 
-        this.scene.background = new reps.m3d.color( 0xffffff )
+        this.scene.background = new reps.m3d.color( 0x000000 )
 
-        // M3DREP.create.skybox( `${ EPATH }assets/textures/skybox/space.1.jpeg`, this.renderers.webgl, this.scene )
+        /* add hemisphere light */ 
+        this.lights.hemisphere = new reps.m3d.light.hemisphere( 0xffffff, 0xffffff, 0.6 ) // create the hemisphere light
+        this.lights.hemisphere.color.setHSL( 0.6, 0.75, 0.5 ) // set color of hemisphere light
+        this.lights.hemisphere.groundColor.setHSL( 0.095, 0.5, 0.5 ) // set ground color of hemisphere light
+        this.lights.hemisphere.position.set( 0, 500, 0 ) // change position of hemisphere light
 
-        // return `Evironment created at ${ HTIME.get().full() }`
+        this.scene.add( this.lights.hemisphere ) // add hemisphere light to the scene
+
+        /* add sun light */ 
+        this.lights.sun = new reps.m3d.light.directional( 0xffffff, 1 ) // create the sun light
+        this.lights.sun.position.set( -250, 250, 250 ) // change position of sun light
+
+        /* modify the sun light's shadow properties */ 
+        this.lights.sun.castShadow = true // allow sun light to cast a shadow
+
+        this.lights.sun.shadow.camera.near = 0.000001 
+        this.lights.sun.shadow.camera.far = 2000
+        this.lights.sun.shadow.camera.right = 500
+        this.lights.sun.shadow.camera.left = -500
+        this.lights.sun.shadow.camera.top = 500
+        this.lights.sun.shadow.camera.bottom = -500
+        
+        this.lights.sun.shadow.mapSize.width = 100000
+        this.lights.sun.shadow.mapSize.height = 100000
+
+        this.scene.add( this.lights.sun ) // add sun light to the scene
+
+        this.enableSkybox()
+    }
+
+    enableSkybox () {
+        const skybox = this.loader.texture.load( '../../assets/textures/skybox/sky.9.jpeg', () => {
+			const rt = new reps.m3d.webgl.renderTarget.cube( skybox.image.height )
+			rt.fromEquirectangularTexture( this.renderers.webgl, skybox )
+
+			this.scene.background = rt.texture
+		} )
     }
 
     render () {

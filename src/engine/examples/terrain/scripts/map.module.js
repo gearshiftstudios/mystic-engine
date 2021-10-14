@@ -9,8 +9,7 @@ class Handler_Map {
     constructor () {
         const scope = this
 
-        this.waterCycle = 1
-
+        this.fogVisible = false
         this.trees = {}
 
         this.biomes = [
@@ -30,6 +29,10 @@ class Handler_Map {
                 width: 500,
                 height: 500,
             }
+        }
+
+        this.timelines = {
+            water: null
         }
 
         this.tile = class {
@@ -52,25 +55,6 @@ class Handler_Map {
                 this.position = new Array()
                 this.surface = false
             }
-        
-            get ( point ) {
-                const indexesArray = this.indexes,
-                positionArray = this.position
-        
-                let chosenPoint
-        
-                if ( point == 'x' ) chosenPoint = 0
-                else if ( point == 'y' ) chosenPoint = 1
-                else if ( point == 'z' ) chosenPoint = 2
-        
-                const index = () => { return indexesArray[ chosenPoint ] },
-                position = () => { return positionArray[ chosenPoint ] }
-        
-                return {
-                    index: index,
-                    position: position,
-                }
-            }
         }
 
         this.face = class {
@@ -84,8 +68,8 @@ class Handler_Map {
             calcMaxHeight ( useIndexed ) {
                 const zValues = new Array()
         
-                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].get( 'z' ).position() ) )
-                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].get( 'z' ).position() ) )
+                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].position[ 2 ] ) )
+                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].position[ 2 ] ) )
         
                 return Math.max( ...zValues )
             }
@@ -93,8 +77,8 @@ class Handler_Map {
             calcMinHeight ( useIndexed ) {
                 const zValues = new Array()
         
-                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].get( 'z' ).position() ) )
-                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].get( 'z' ).position() ) )
+                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].position[ 2 ] ) )
+                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].position[ 2 ] ) )
         
                 return Math.min( ...zValues )
             }
@@ -102,8 +86,8 @@ class Handler_Map {
             calcAvgHeight ( useIndexed ) {
                 const zValues = new Array()
         
-                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].get( 'z' ).position() ) )
-                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].get( 'z' ).position() ) )
+                if ( useIndexed ) this.vertices.indexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.indexed[ v ].position[ 2 ] ) )
+                else this.vertices.nonIndexed.forEach( v => zValues.push( MAPGROUP.mesh.vertices.nonIndexed[ v ].position[ 2 ] ) )
         
                 return ( zValues[ 0 ] + zValues[ 1 ] + zValues[ 2 ] ) / 3
             }
@@ -126,23 +110,33 @@ class Handler_Map {
     }
 
     animateWater () {
-        var tl = new animator.TimelineMax( { yoyo: true, repeat: -1 } )
+        this.timelines.water = new animator.TimelineMax( { yoyo: true, repeat: -1 } )
 
-        // tl.from( 
-        //     MAPGROUP.water.geometry.attributes.position.array,
-        //     { 
-        //         endArray: MAPGROUP.waterGeo[ 1 ].attributes.position.array, 
-        //         duration: 1,
-        //     }
-        // )
-
-        tl.to( 
+        this.timelines.water.to( 
             MAPGROUP.water.geometry.attributes.position.array,
             { 
                 endArray: MAPGROUP.waterGeo[ 1 ].attributes.position.array, 
                 duration: 2,
             }
         )
+    }
+    
+    toggleFog () {
+        if ( MAPGROUP.initialized ) {
+            if ( this.fogVisible ) {
+                MAPGROUP.fog.visible = false
+
+                program.environment.enableSkybox()
+
+                this.fogVisible = false
+            } else {
+                MAPGROUP.fog.visible = true
+
+                program.environment.scene.background = new engine.m3d.color( 0x000000 )
+
+                this.fogVisible = true
+            }
+        }
     }
 
     generateMacro () {
@@ -162,17 +156,25 @@ class Handler_Map {
         ).then( values => {
             this.regenerate( values.heightMap, values.biomeMap ).then( data => {
                 this.createMesh( data.width, data.height, data.heightMap, data.biomeMap ).then( geoParams => {
-                    this.generatePeaks( geoParams ).then( () => {
-                        this.generateFaces().then( () => {
-                            this.generateColors( geoParams ).then( () => {
-                                this.loadTrees().then( () => {
-                                    this.generateTiles().then( () => {
-                                        this.separateTilesByBiome().then( () => {
-                                            this.generateTreeInstances().then( () => {
-                                                this.generateWater().then( () => {
-                                                    this.animateWater()
+                    this.generateFog( geoParams ).then( () => {
+                        this.generatePeaks( geoParams ).then( () => {
+                            this.generateFaces().then( () => {
+                                this.generateColors( geoParams ).then( () => {
+                                    this.loadTrees().then( () => {
+                                        this.generateTiles().then( () => {
+                                            this.separateTilesByBiome().then( () => {
+                                                this.generateTreeInstances().then( () => {
+                                                    this.generateWater( geoParams ).then( () => {
+                                                        this.animateWater()
 
-                                                    MAPGROUP.initialized = true
+                                                        MAPGROUP.fog.geometry.attributes.position.needsUpdate = true
+                                                        MAPGROUP.fog.visible = false
+
+                                                        MAPGROUP.water.geometry.attributes.position.needsUpdate = true
+
+                                                        MAPGROUP.animateWater = true
+                                                        MAPGROUP.initialized = true
+                                                    } )
                                                 } )
                                             } )
                                         } )
@@ -182,107 +184,25 @@ class Handler_Map {
                         } )
                     } )
                 } )
-
-                    // this.loadTrees().then( () => {
-                    //     this.generateTiles().then( () => {
-                    //         this.separateTilesByBiome().then( () => {
-                    //             this.separateTilesByLand().then( () => {
-                    //                 this.generateTreeInstances().then( () => {
-                    //                     this.generateWater().then( () => {
-                    //                         MAPGROUP.initialized = true
-                    //                     } )
-                    //                 } )
-                    //             } )
-                    //         } )
-                    //     } )
-                    // } )
-                } )
             } )
+        } )
     }
 
     generateTiles () {
         return new Promise ( resolve => {
-            const mesh = MAPGROUP.mesh
+            const worker = new Worker( './scripts/workers/generators/tiles.worker.js' )
 
-            MAPGROUP.tiles = []
+            worker.postMessage( [ 
+                MAPGROUP.mesh.faces,
+                JSON.stringify( MAPGROUP.mesh.vertices ),
+                this.biomes
+            ] )
 
-            MAPGROUP.mesh.faces.forEach( ( f, ix ) => {
-                if ( ix % 2 == 0 ) {
-                    const points = [ [], [] ],
+            worker.onmessage = e => {
+                MAPGROUP.tiles = e.data[ 0 ]
 
-                    face = { 
-                        a: [
-                            ix,
-                            {
-                                a: f.vertices.nonIndexed[ 0 ],
-                                b: f.vertices.nonIndexed[ 1 ],
-                                c: f.vertices.nonIndexed[ 2 ],
-                            },
-                            f.isCliff,
-                            f.isCoast
-                        ], 
-                        b: [
-                            ix + 1,
-                            {
-                                a: mesh.faces[ ix + 1 ].vertices.nonIndexed[ 0 ],
-                                b: mesh.faces[ ix + 1 ].vertices.nonIndexed[ 1 ],
-                                c: mesh.faces[ ix + 1 ].vertices.nonIndexed[ 2 ],
-                            },
-                            mesh.faces[ ix + 1 ].isCliff,
-                            mesh.faces[ ix + 1 ].isCoast
-                        ] 
-                    }
-
-                    let cliff = false, coast = false
-
-                    if ( face.a[ 2 ] || face.b[ 2 ] ) cliff = true
-                    if ( face.a[ 3 ] || face.b[ 3 ] ) coast = true
-
-                    for ( const p in face.a[ 1 ] ) points[ 0 ].push( face.a[ 1 ][ p ] )
-
-                    for ( const p in face.b[ 1 ] ) {
-                        if ( !points[ 0 ].includes( face.b[ 1 ][ p ] ) ) points[ 0 ].push( face.b[ 1 ][ p ] )
-                    }
-
-                    points[ 1 ].push(
-                        (
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 0 ] ].position[ 0 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 1 ] ].position[ 0 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 2 ] ].position[ 0 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 3 ] ].position[ 0 ]
-                        ) / 4,
-                        (
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 0 ] ].position[ 1 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 1 ] ].position[ 1 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 2 ] ].position[ 1 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 3 ] ].position[ 1 ]
-                        ) / 4,
-                        (
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 0 ] ].position[ 2 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 1 ] ].position[ 2 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 2 ] ].position[ 2 ] +
-                            mesh.vertices.nonIndexed[ points[ 0 ][ 3 ] ].position[ 2 ]
-                        ) / 4
-                    )
-    
-                    MAPGROUP.tiles.push( new this.tile( 
-                        face.a[ 0 ], 
-                        face.b[ 0 ],
-                        [
-                            points[ 0 ][ 0 ],
-                            points[ 0 ][ 1 ],
-                            points[ 0 ][ 2 ],
-                            points[ 0 ][ 3 ]
-                        ],
-                        points[ 1 ], 
-                        f.biome,
-                        cliff,
-                        coast
-                    ) )
-                }
-            } )
-
-            resolve()
+                resolve()
+            }
         } )
     }
 
@@ -300,7 +220,9 @@ class Handler_Map {
                         if ( MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].hasTree && 
                             MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType && 
                             MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType == h 
-                        ) trees.push( MAPGROUP.tilesByBiome[ b ][ i ] )
+                        ) {
+                            trees.push( MAPGROUP.tilesByBiome[ b ][ i ] )
+                        }
                     }
                     
                     const uniScale = this.trees[ b ][ h ].uniScale
@@ -358,8 +280,12 @@ class Handler_Map {
         } )
     }
 
-    generateWater () {
+    generateWater ( geoParams ) {
         return new Promise ( resolve => {
+            const worker = new Worker( './scripts/workers/generators/water.worker.module.js', {
+                type: 'module'
+            } )
+
             MAPGROUP.waterGeo = [ 
                 new engine.m3d.geometry.buffer.plane( 
                     MAPGROUP.size.width,
@@ -392,29 +318,19 @@ class Handler_Map {
 
             MAPGROUP.add( MAPGROUP.water )
 
-            let count = 0
+            worker.postMessage( [ 
+                MAPGROUP.waterGeo[ 0 ].attributes.position.array,
+                MAPGROUP.waterGeo[ 1 ].attributes.position.array,
+                geoParams.heightMap.width,
+                geoParams.heightMap.height
+            ] )
 
-            for ( let i = 0; i < MAPGROUP.waterGeo[ 0 ].attributes.position.array.length; i++ ) {
-                count++
+            worker.onmessage = e => {
+                MAPGROUP.waterGeo[ 0 ].attributes.position.array = e.data[ 0 ]
+                MAPGROUP.waterGeo[ 1 ].attributes.position.array = e.data[ 1 ]
 
-                if ( count < 3 ) MAPGROUP.waterGeo[ 0 ].attributes.position.array[ i ] += engine.math.random.number.between( -0.35, 0.35 )
-                if ( count == 3 ) MAPGROUP.waterGeo[ 0 ].attributes.position.array[ i ] += engine.math.random.number.between( -0.15, 0.15 )
-
-                if ( count >= 3 ) count = 0
+                resolve()
             }
-
-            let count2 = 0
-
-            for ( let i = 0; i < MAPGROUP.waterGeo[ 1 ].attributes.position.array.length; i++ ) {
-                count2++
-
-                if ( count2 < 3 ) MAPGROUP.waterGeo[ 1 ].attributes.position.array[ i ] += engine.math.random.number.between( -0.35, 0.35 )
-                if ( count2 == 3 ) MAPGROUP.waterGeo[ 1 ].attributes.position.array[ i ] += engine.math.random.number.between( -0.15, 0.15 )
-
-                if ( count2 >= 3 ) count2 = 0
-            }
-
-            resolve()
         } )
     }
 
@@ -423,25 +339,25 @@ class Handler_Map {
             /* load in temperate deciduous trees */ 
 
             this.loadTreeLOD( 'tundra.tall.darkgreen' ).then( () => {
-            this.loadTreeLOD( 'taiga.tall.darkgreen' ).then( () => {
-            this.loadTreeLOD( 'temp-decid.tall.darkgreen' ).then( () => {
-                this.loadTreeLOD( 'temp-decid.moderate.darkgreen' ).then( () => {
-                    this.loadTreeLOD( 'temp-decid.moderate.orange' ).then( () => {
-                        this.loadTreeLOD( 'temp-decid.moderate.yellow' ).then( () => {
-                            this.loadTreeLOD( 'sub-trop-desert.average.deepgreen' ).then( () => {
-                            this.loadTreeLOD( 'temp-decid.average.darkgreen' ).then( () => {
-                                this.loadTreeLOD( 'trop-rain.average.deepgreen' ).then( () => {
-                                    this.loadTreeLOD( 'trop-rain.average.lightgreen' ).then( () => {
-                                        resolve()
+                this.loadTreeLOD( 'taiga.tall.darkgreen' ).then( () => {
+                    this.loadTreeLOD( 'temp-decid.tall.darkgreen' ).then( () => {
+                        this.loadTreeLOD( 'temp-decid.moderate.darkgreen' ).then( () => {
+                            this.loadTreeLOD( 'temp-decid.moderate.orange' ).then( () => {
+                                this.loadTreeLOD( 'temp-decid.moderate.yellow' ).then( () => {
+                                    this.loadTreeLOD( 'sub-trop-desert.average.deepgreen' ).then( () => {
+                                        this.loadTreeLOD( 'temp-decid.average.darkgreen' ).then( () => {
+                                            this.loadTreeLOD( 'trop-rain.average.deepgreen' ).then( () => {
+                                                this.loadTreeLOD( 'trop-rain.average.lightgreen' ).then( () => {
+                                                    resolve()
+                                                } )
+                                            } )
+                                        } )
                                     } )
                                 } )
-                            } )
                             } )
                         } )
                     } )
                 } )
-            } )
-            } )
             } )
         } )
     }
@@ -474,47 +390,23 @@ class Handler_Map {
 
     separateTilesByBiome () {
         return new Promise ( resolve => {
-            MAPGROUP.tilesByBiome = {}
-            MAPGROUP.waterTiles = []
+            const worker = new Worker( './scripts/workers/separators/tbb.worker.js' )
 
-            MAPGROUP.tiles.forEach( ( t, ix ) => {
-                if ( !MAPGROUP.tilesByBiome[ this.biomes[ t.biome ][ 0 ] ] ) MAPGROUP.tilesByBiome[ this.biomes[ t.biome ][ 0 ] ] = []
+            console.log( this.trees )
 
-                if ( t.center[ 2 ] > 0 ) {
-                    if ( !t.isCliff && !t.isCoast ) {
-                        if ( t.hasTree && this.trees[ this.biomes[ t.biome ][ 0 ] ] ) {
-                            t.treeType = Object.keys( this.trees[ this.biomes[ t.biome ][ 0 ] ] )[ Math.floor( 
-                                Math.random() * Object.keys( this.trees[ this.biomes[ t.biome ][ 0 ] ] ).length
-                            ) ]
-                        }
+            worker.postMessage( [ 
+                MAPGROUP.tiles,
+                this.biomes,
+                JSON.stringify( this.trees )
+            ] )
 
-                        MAPGROUP.tilesByBiome[ this.biomes[ t.biome ][ 0 ] ].push( ix )
-                    }
-                } else MAPGROUP.waterTiles.push( ix )
-               
-            } )
+            worker.onmessage = e => {
+                MAPGROUP.tilesByBiome = JSON.parse( e.data[ 0 ] )
+                MAPGROUP.waterTiles = e.data[ 1 ]
+                MAPGROUP.tiles = e.data[ 2 ]
 
-            resolve()
-        } )
-    }
-    
-    separateTilesByLand () {
-        return new Promise ( resolve => {
-            MAPGROUP.landSharingVertices = []
-            MAPGROUP.waterSharingVertices = []
-
-            MAPGROUP.waterTiles.forEach( ( t, ix ) => {
-                MAPGROUP.tiles[ t ].vertices.forEach( v => {
-                    if ( MAPGROUP.tiles[ t ].center[ 2 ] > 0 ) MAPGROUP.landSharingVertices.push( v )
-                    else {
-                        if ( !MAPGROUP.landSharingVertices.includes( v ) && !MAPGROUP.waterSharingVertices.includes( v ) ) {
-                            MAPGROUP.waterSharingVertices.push( v )
-                        }
-                    }
-                } )
-            } )
-
-            resolve()
+                resolve()
+            }
         } )
     }
 
@@ -528,12 +420,20 @@ class Handler_Map {
                 }
             }
 
-			if ( MAPGROUP.mesh != null ) {
-				if ( MAPGROUP.inScene == true && scene && scene.isScene ) scene.remove( MAPGROUP.mesh )
-				else MAPGROUP.remove( MAPGROUP.mesh )
-			}
+			if ( MAPGROUP.mesh != null ) MAPGROUP.remove( MAPGROUP.mesh )
+            if ( MAPGROUP.fog != null ) MAPGROUP.remove( MAPGROUP.fog )
 
 			MAPGROUP.mesh = null
+            MAPGROUP.fog = null
+
+            if ( MAPGROUP.water != null ) {
+                MAPGROUP.remove( MAPGROUP.water )
+
+                if ( this.timelines.water != null ) {
+                    this.timelines.water.kill()
+                    this.timelines.water = null
+                }
+            }
 
             const data = {
                 width: MAPGROUP.size.width,
@@ -579,67 +479,102 @@ class Handler_Map {
         } )
     }
 
-    generatePeaks ( geoParams ) {
+    generateFog ( geoParams ) {
         return new Promise( resolve => {
-            const bufferVertices = MAPGROUP.mesh.geometry.attributes.position.array
+            MAPGROUP.fogMask = []
 
-            MAPGROUP.mesh.vertices = {
-                indexed: new Array(),
-                nonIndexed: new Array(),
-                positionSortedNI: new Array(),
-                simplifiedNI: new Array(),
+            const area = geoParams.width * geoParams.height
+
+            for ( let i = 0; i < area; i++ ) MAPGROUP.fogMask.push( 1 )
+
+            if ( area == 250000 ) {
+                MAPGROUP.fogMask[ 249498 ] = 0
+                MAPGROUP.fogMask[ 249497 ] = 0
+                MAPGROUP.fogMask[ 249496 ] = 0
+
+                MAPGROUP.fogMask[ 248998 ] = 0
+                MAPGROUP.fogMask[ 248997 ] = 0
+                MAPGROUP.fogMask[ 248996 ] = 0
+
+                MAPGROUP.fogMask[ 248498 ] = 0
+                MAPGROUP.fogMask[ 248497 ] = 0
+                MAPGROUP.fogMask[ 248496 ] = 0
             }
+         
+            //create a typed array to hold texture data
+            const data = new Uint8Array( MAPGROUP.fogMask.length )
 
-            let vertex = new this.vertex(),
-                count = 0
+            //copy mask into the typed array
+            data.set( MAPGROUP.fogMask.map( v => v * 255 ) )
 
-            MAPGROUP.mesh.geometry.attributes.position.array.forEach( ( v ,index ) => {
-                vertex.indexes.push( index )
-                vertex.position.push( v )
+            //create the texture
+            const texture = new engine.m3d.texture.data( 
+                data, 
+                geoParams.width, 
+                geoParams.height, 
+                engine.m3d.luminanceFormat, 
+                engine.m3d.unassigned.byteType 
+            )
+         
+            texture.flipY = true
+            texture.wrapS = engine.m3d.clampToEdgeWrapping
+            texture.wrapT = engine.m3d.clampToEdgeWrapping
 
-                count++
+            //it's likely that our texture will not have "power of two" size, meaning that mipmaps are not going to be supported on WebGL 1.0, so let's turn them off
+            texture.generateMipmaps = false
+         
+            texture.magFilter = engine.m3d.linearFilter
+            texture.minFilter = engine.m3d.linearFilter
+         
+            texture.needsUpdate = true
+         
+            const geometry = new engine.m3d.geometry.buffer.plane( 
+                geoParams.width, 
+                geoParams.height, 
+                geoParams.width, 
+                geoParams.height 
+            )
 
-                if ( count == 3 ) {
-                    MAPGROUP.mesh.vertices.indexed.push( vertex )
-
-                    count = 0
-                        
-                    vertex = new this.vertex()
-                }
+            const material = new engine.m3d.material.mesh.basic( {
+                color: 0x000000, 
+                alphaMap: texture, 
+                transparent: true, 
+                opacity:0.9
             } )
+        
+            // construct a mesh
+            MAPGROUP.fog = new engine.m3d.mesh.default( geometry, material ); 
 
-            for ( let hpx = 0; hpx < geoParams.heightMap.height; hpx++ ) {
-                for ( let wpx = 0; wpx < geoParams.heightMap.width; wpx++ ) {
-                    const n = ( hpx * ( geoParams.heightMap.height ) + wpx ),
-                    col = geoParams.heightMap.data[ n * 4 ], // the red channel
-
-                    vertex = MAPGROUP.mesh.vertices.indexed[ n ],
-                    x = vertex.indexes[ 0 ],
-                    y = vertex.indexes[ 1 ],
-                    z = vertex.indexes[ 2 ]
-
-                    vertex.surface = true
-
-                    bufferVertices[ z ] = this.scaleOut( col, 0, 255, MAPGROUP.elev.min, MAPGROUP.elev.max )
-
-                    if ( bufferVertices[ z ] > MAPGROUP.elev.min ) {
-						if ( bufferVertices[ z ] >= MAPGROUP.elev.min + 7.5 ) {
-							bufferVertices[ z ] += this.scaleOut( Math.random(), 0, 1, 1.3, 1.7 )
-							bufferVertices[ x ] += this.scaleOut( Math.random(), 0, 1, -0.5, 0.5 ) //jitter x
-							bufferVertices[ y ] += this.scaleOut( Math.random(), 0, 1, -0.5, 0.5 ) //jitter y
-						} else {
-							bufferVertices[ x ] += this.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
-							bufferVertices[ y ] += this.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
-						}
-					}
-
-                    vertex.position[ 0 ] = bufferVertices[ x ]
-                    vertex.position[ 1 ] = bufferVertices[ y ]
-                    vertex.position[ 2 ] = bufferVertices[ z ]
-                }
-            }
+            // add the mesh to the scene
+            MAPGROUP.add( MAPGROUP.fog );
+        
+            MAPGROUP.fog.rotation.x = engine.m3d.util.math.degToRad( -90 )
+            MAPGROUP.fog.position.y = 0.3
 
             resolve()
+        } )
+    }
+
+    generatePeaks ( geoParams ) {
+        return new Promise( resolve => {
+            const worker = new Worker( './scripts/workers/generators/peaks.worker.js' )
+
+            worker.postMessage( [ 
+                MAPGROUP.mesh.geometry.attributes.position.array,
+                geoParams.heightMap.data,
+                geoParams.heightMap.width,
+                geoParams.heightMap.height,
+                MAPGROUP.elev.min,
+                MAPGROUP.elev.max
+            ] )
+
+            worker.onmessage = e => {
+                MAPGROUP.mesh.geometry.attributes.position.array = e.data[ 0 ]
+                MAPGROUP.fog.geometry.attributes.position.array = e.data[ 0 ]
+                MAPGROUP.mesh.vertices = JSON.parse( e.data[ 1 ] )
+
+                resolve()
+            }
         } )
     }
 
@@ -816,7 +751,7 @@ class Handler_Map {
                 }
                     
                 if ( min == MAPGROUP.elev.min && max == MAPGROUP.elev.min ) {
-                    f.terrainColor = 0x205956
+                    f.terrainColor = 0xb8a763
                 }
     
                 color.setHex( f.terrainColor )
@@ -1046,8 +981,6 @@ class Handler_Map {
         initMM()
         biomeCheck()
         draw()
-
-        console.log( convertTo1D( biomeMap ) )
 
         return {
             biomeMap: convertTo1D( biomeMap ),
