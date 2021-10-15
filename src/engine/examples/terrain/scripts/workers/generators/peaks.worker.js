@@ -64,16 +64,14 @@ onmessage = e => {
             bufferVertices[ z ] = methods.scaleOut( col, 0, 255, elevMin, elevMax )
 
             if ( bufferVertices[ z ] > elevMin ) {
-                if ( bufferVertices[ z ] >= elevMin + 7.5 ) {
-                    bufferVertices[ z ] += methods.scaleOut( Math.random(), 0, 1, 1.3, 1.7 )
-                } else {
-                    if ( hpx != 0 &&
-                    hpx != heightMapHeight - 1 &&
-                    wpx != 0 &&
-                    wpx != heightMapWidth - 1 ) {
-                        bufferVertices[ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
-                        bufferVertices[ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
-                    }
+                if ( bufferVertices[ z ] >= elevMin + 7.5 ) bufferVertices[ z ] += methods.scaleOut( Math.random(), 0, 1, 1.3, 1.7 )
+
+                if ( hpx != 0 &&
+                hpx != heightMapHeight - 1 &&
+                wpx != 0 &&
+                wpx != heightMapWidth - 1 ) {
+                    bufferVertices[ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
+                    bufferVertices[ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
                 }
             }
 

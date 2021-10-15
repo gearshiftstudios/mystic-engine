@@ -3,7 +3,7 @@ import { Handler } from '../handler.module.js'
 
 const MATH = new handler_math.handler()
 
-class Hanlder_Interface extends Handler {
+class Hanlder_UI extends Handler {
     constructor ( category ) {
         super( category )
         
@@ -114,4 +114,4 @@ class Hanlder_Interface extends Handler {
     }
 }
 
-export { Hanlder_Interface as handler }
+export { Hanlder_UI as handler }

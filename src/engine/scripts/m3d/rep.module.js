@@ -1,7 +1,9 @@
-import * as m3d_parser_mobjx from './parsers/mobjx.module.js'
+import { Parser_MOBJX } from './parsers/mobjx.module.js'
+import { Parser_MNATPK } from './parsers/mnatpk.module.js'
 
 const parser = {
-    mobjx: new m3d_parser_mobjx.parser()
+    mnatpk: new Parser_MNATPK(),
+    mobjx: new Parser_MOBJX(),
 }
 
 export { parser }

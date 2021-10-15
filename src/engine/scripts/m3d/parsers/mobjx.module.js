@@ -36,4 +36,4 @@ class Parser_MOBJX extends Parser {
     }
 }
 
-export { Parser_MOBJX as parser }
+export { Parser_MOBJX, Parser_MOBJX as parser }

@@ -109,8 +109,8 @@ class Environment {
         this.lights.sun.shadow.camera.top = 500
         this.lights.sun.shadow.camera.bottom = -500
         
-        this.lights.sun.shadow.mapSize.width = 100000
-        this.lights.sun.shadow.mapSize.height = 100000
+        this.lights.sun.shadow.mapSize.width = 50000
+        this.lights.sun.shadow.mapSize.height = 50000
 
         this.scene.add( this.lights.sun ) // add sun light to the scene
 

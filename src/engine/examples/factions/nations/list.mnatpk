@@ -1,0 +1,14 @@
+{
+    "nations": {
+        "england" : {
+            "data": {
+                "name": "Kingdom of England"
+            }
+        },
+        "spain" : {
+            "data": {
+                "name": "Kingdom of Spain"
+            }
+        }
+    }
+}
