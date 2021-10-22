@@ -1,5 +1,8 @@
 import * as m3d_gui from '../../../../../scripts/m3d/gui/dat.gui.module.js'
+
 import { Program_Module } from '../../module.module.js'
+
+// import * as handler_macromap from '../../handlers/macromap.module.js'
 
 class GUI_MacroMap extends Program_Module {
     constructor ( category = 'GUI - Macro Map' ) {
@@ -37,7 +40,7 @@ class GUI_MacroMap extends Program_Module {
                 'Large': 1000
             } ).name( 'Size' )
 
-            this.elements.buttons.static.regenerate = this.elements.folder.static.add( program.handlers.map, 'generateMacro' ).name( 'Regenerate' )
+            this.elements.buttons.static.regenerate = this.elements.folder.static.add( program.handlers.macromap, 'generateMacro' ).name( 'Regenerate' )
 
             this.elements.folder.static.elevation = this.elements.folder.static.addFolder( 'Elevation' )
             this.elements.buttons.static.elevation.max = this.elements.folder.static.elevation.add( program.macromap.elev, 'max', 0, 35 ).name( 'Max' )
@@ -52,7 +55,7 @@ class GUI_MacroMap extends Program_Module {
             this.elements.folder.live.water.open()
 
             this.elements.folder.live.fog = this.elements.folder.live.addFolder( 'Fog of War' )
-            this.elements.buttons.live.fog.toggle = this.elements.folder.live.fog.add( program.handlers.map, 'toggleFog' ).name( 'Toggle' ).listen()
+            this.elements.buttons.live.fog.toggle = this.elements.folder.live.fog.add( program.handlers.macromap, 'toggleFog' ).name( 'Toggle' ).listen()
             this.elements.folder.live.fog.open()
 
             this.elements.folder.live.open()

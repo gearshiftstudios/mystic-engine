@@ -1,0 +1,349 @@
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond&family=Montserrat:wght@500&display=swap");
+background {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: none;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: auto;
+  z-index: 99;
+}
+
+button-lt, button-rt, button-lb, button-rb {
+  position: absolute;
+  height: 2vh;
+  background-color: #0f334d;
+  border-radius: 0.5vh;
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+          box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+  color: white;
+  font-family: 'EB Garamond';
+  font-size: 1.5vh;
+  font-weight: bold;
+  letter-spacing: 0.15vh;
+  padding: 0.5vh 1vh 0.5vh 1vh;
+  text-align: center;
+  text-shadow: 0 0 1vh black;
+  -webkit-transition: 0.25s;
+  transition: 0.25s;
+}
+
+button-lt[large], button-rt[large], button-lb[large], button-rb[large] {
+  height: 3vh;
+  font-size: 2vh;
+}
+
+button-lt[wood-metal], button-rt[wood-metal], button-lb[wood-metal], button-rb[wood-metal] {
+  border: 0.5vh #b4b4b4 ridge;
+}
+
+button-lt[wood-gold], button-rt[wood-gold], button-lb[wood-gold], button-rb[wood-gold] {
+  border: 0.5vh goldenrod ridge;
+}
+
+button-lt:hover, button-rt:hover, button-lb:hover, button-rb:hover {
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 1vh white;
+          box-shadow: 0 0 1vh black, inset 0 0 1vh white;
+  text-shadow: 0 0 1vh white;
+  -webkit-transform: scale(1.05);
+          transform: scale(1.05);
+}
+
+button-lt {
+  left: 0;
+  top: 0;
+}
+
+button-rt {
+  right: 0;
+  top: 0;
+}
+
+button-lb {
+  left: 0;
+  bottom: 0;
+}
+
+button-rb {
+  right: 0;
+  bottom: 0;
+}
+
+header-lt, header-rt {
+  position: absolute;
+  width: calc( 100% - 2vh);
+  height: 2vh;
+  margin: 1vh 0vh 0vh 0vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+          box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+  color: white;
+  font-family: 'EB Garamond';
+  font-size: 1.5vh;
+  font-weight: bold;
+  letter-spacing: 0.15vh;
+  padding: 0.5vh 1vh 0.5vh 1vh;
+  text-align: center;
+  text-shadow: 0 0 1vh black;
+}
+
+header-lt[large], header-rt[large] {
+  height: 3vh;
+  font-size: 2vh;
+}
+
+header-lt[ribbon-green], header-rt[ribbon-green] {
+  background-image: url("../assets/interface/ribbon.green.tileable.svg");
+  background-size: 3vh 3vh;
+  background-repeat: repeat-x;
+}
+
+header-lt[ribbon-green][large], header-rt[ribbon-green][large] {
+  background-size: 4vh 4vh;
+}
+
+header-lt {
+  left: 0;
+  top: 0;
+}
+
+header-rt {
+  right: 0;
+  top: 0;
+}
+
+interface-lt, interface-rt, interface-lb, interface-rb {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 0.5vh;
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+          box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+  pointer-events: auto;
+  z-index: 11;
+}
+
+interface-lt[wood-metal], interface-rt[wood-metal], interface-lb[wood-metal], interface-rb[wood-metal] {
+  background-image: url("../assets/interface/wood.plank.doubled.jpg");
+  background-size: 20vh;
+  background-repeat: repeat;
+  border: 0.5vh #b4b4b4 ridge;
+}
+
+interface-lt[wood-gold], interface-rt[wood-gold], interface-lb[wood-gold], interface-rb[wood-gold] {
+  background-image: url("../assets/interface/wood.plank.doubled.jpg");
+  background-size: 20vh;
+  background-repeat: repeat;
+  border: 0.5vh goldenrod ridge;
+}
+
+interface-lt {
+  left: 0;
+  top: 0;
+}
+
+interface-rt {
+  right: 0;
+  top: 0;
+}
+
+interface-lb {
+  left: 0;
+  bottom: 0;
+}
+
+interface-rb {
+  right: 0;
+  bottom: 0;
+}
+
+leaflet {
+  width: 100%;
+  height: 3vh;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+leaflet[fixed] {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+leaflet[fixed] label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: 2vh;
+  color: white;
+  font-family: 'EB Garamond';
+  font-size: 1.5vh;
+  font-weight: bold;
+  letter-spacing: 0.15vh;
+  padding: 0.5vh 1vh 0.5vh 1vh;
+  text-align: center;
+  text-shadow: 0 0 1vh black;
+}
+
+leaflet[fixed] input[type='range'] {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: calc( 50% - 1vh);
+  height: 0.5vh;
+  margin: 1.25vh 1vh 0vh 0vh;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: #606060;
+  border-radius: 0.25vh;
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 0.1vh black;
+          box-shadow: 0 0 1vh black, inset 0 0 0.1vh black;
+  outline: none;
+  -webkit-transition: 0.25s;
+  transition: 0.25s;
+}
+
+leaflet[fixed] input[type='range'][images] {
+  width: calc( 50% - 6.5vh);
+  margin-right: 3.5vh;
+}
+
+leaflet[fixed] input[type='range']::-webkit-slider-thumb {
+  width: 2vh;
+  height: 2vh;
+  -webkit-appearance: none;
+          appearance: none;
+  background-image: url("../assets/interface/slider.thumb.wood-metal.svg");
+  background-size: 2vh 2vh;
+  border-radius: 1vh;
+  -webkit-transition: 0.25s;
+  transition: 0.25s;
+}
+
+leaflet[fixed] input[type='range']:hover {
+  background-color: #6a4d00;
+}
+
+leaflet[fixed] input[type='range']:hover::-webkit-slider-thumb {
+  background-image: url("../assets/interface/slider.thumb.wood-gold.svg");
+}
+
+leaflet[fixed] input-image {
+  position: absolute;
+  width: 3vh;
+  height: 3vh;
+  background-color: transparent;
+  background-image: none;
+  background-position: center;
+  background-size: 150% 150%;
+  background-repeat: no-repeat;
+}
+
+leaflet[fixed] input-image[f] {
+  left: 0;
+  top: 0;
+  margin: 0vh 0vh 0vh 50%;
+}
+
+leaflet[fixed] input-image[l] {
+  right: 0;
+  top: 0;
+  margin: 0vh 0.5vh 0vh 0vh;
+}
+
+leaflet[f] {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+leaflet[s] {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+leaflet:hover {
+  z-index: 12;
+}
+
+loader-lt, loader-rt, loader-lb, loader-rb {
+  position: absolute;
+  width: 70vh;
+  height: 3vh;
+  margin: 50vh 0vh 0vh 50vw;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 0.5vh;
+  border: 0.5vh #b4b4b4 ridge;
+  -webkit-box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+          box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+  z-index: 100;
+}
+
+loader-lt bar, loader-rt bar, loader-lb bar, loader-rb bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: turquoise;
+  -webkit-box-shadow: inset 0 0 1vh black;
+          box-shadow: inset 0 0 1vh black;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
+}
+
+loader-lt text, loader-rt text, loader-lb text, loader-rb text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  color: white;
+  font-family: 'EB Garamond';
+  font-size: 2vh;
+  font-weight: bold;
+  letter-spacing: 0.15vh;
+  padding-top: 0vh;
+  text-align: center;
+  text-shadow: 0 0 1vh black;
+}
+
+loader-lt {
+  left: 0;
+  top: 0;
+}
+
+loader-rt {
+  right: 0;
+  top: 0;
+}
+
+loader-lb {
+  left: 0;
+  bottom: 0;
+  margin: 0vh 0vh 3vh 50vw;
+  -webkit-transform: translate(-50%, 0%);
+          transform: translate(-50%, 0%);
+}
+
+loader-rb {
+  right: 0;
+  bottom: 0;
+  margin: 0vh 50vw 3vh 0vh;
+  -webkit-transform: translate(-50%, 0%);
+          transform: translate(-50%, 0%);
+}
+
+state {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  display: none;
+  pointer-events: none;
+}
+/*# sourceMappingURL=interface.min.css.map */

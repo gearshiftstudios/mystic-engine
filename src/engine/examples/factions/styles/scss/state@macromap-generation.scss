@@ -1,0 +1,55 @@
+$header-top: 5vh;
+
+state#macromap-generation {
+    & interface-rt#macromap-generation-panel {
+        width: 43vh;
+        height: 60vh;
+
+        margin: 6.5vh 0vh 0vh 0vh;
+
+        border-radius: 0.5vh 0vh 0vh 0.5vh;
+        border-right: none;
+
+        & leaflet#size {
+            margin-top: $header-top;
+            
+            & input-image[ f ] {
+                background-image: url( '../assets/interface/map.100.large.green.svg' );
+            }
+
+            & input-image[ l ] {
+                background-image: url( '../assets/interface/map.1000.large.green.svg' );
+            }
+        }
+
+        & leaflet#elevation {
+            margin-top: 8vh;
+
+            & input-image[ f ] {
+                background-image: url( '../assets/interface/waves.blue.svg' );
+            }
+
+            & input-image[ l ] {
+                background-image: url( '../assets/interface/mountain.brown.svg' );
+            }
+        }
+
+        & leaflet#fractal {
+            margin-top: 11vh;
+        }
+
+        & button-lb#accept, button-lb#regenerate {
+            width: 10vh;
+        }
+
+        & button-lb#accept {
+            margin: 0vh 0vh 1vh 1vh;
+
+            background-color: darkgreen;
+        }
+
+        & button-lb#regenerate {
+            margin: 0vh 0vh 1vh 15vh;
+        }
+    }
+}

@@ -63,6 +63,13 @@ onmessage = e => {
 
             bufferVertices[ z ] = methods.scaleOut( col, 0, 255, elevMin, elevMax )
 
+            if (
+                hpx == 0 ||
+                hpx == heightMapHeight - 1 ||
+                wpx == 0 ||
+                wpx == heightMapWidth - 1
+            ) vertex.surface = false
+
             if ( bufferVertices[ z ] > elevMin ) {
                 if ( bufferVertices[ z ] >= elevMin + 7.5 ) {
                     bufferVertices[ z ] += methods.scaleOut( Math.random(), 0, 1, 1.3, 1.7 )
@@ -71,10 +78,29 @@ onmessage = e => {
                 if ( hpx != 0 &&
                     hpx != heightMapHeight - 1 &&
                     wpx != 0 &&
-                    wpx != heightMapWidth - 1 ) {
-                        bufferVertices[ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
-                        bufferVertices[ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
-                    }
+                    wpx != heightMapWidth - 1 &&
+                    hpx != 1 &&
+                    hpx != heightMapHeight - 2 &&
+                    wpx != 1 &&
+                    wpx != heightMapWidth - 2     
+                ) {
+                    bufferVertices[ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
+                    bufferVertices[ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
+                }
+            } else {
+                if (
+                    hpx == 2 ||
+                    hpx == heightMapHeight - 3 ||
+                    wpx == 2 ||
+                    wpx == heightMapWidth - 3
+                ) bufferVertices[ z ] = elevMin - 0.15
+
+                if (
+                    hpx == 1 ||
+                    hpx == heightMapHeight - 2 ||
+                    wpx == 1 ||
+                    wpx == heightMapWidth - 2
+                ) bufferVertices[ z ] = elevMin + 0.15
             }
 
             vertex.position[ 0 ] = bufferVertices[ x ]

@@ -9212,7 +9212,10 @@ function Handler_M3D ( category ) {
 				}
 			}
 		},
-		raycast: function raycast(raycaster, intersects) {
+		raycast: function raycast ( raycaster, intersects ) {
+
+			console.error( 'ass' )
+
 			var geometry = this.geometry;
 			var material = this.material;
 			var matrixWorld = this.matrixWorld;
@@ -9377,6 +9380,31 @@ function Handler_M3D ( category ) {
 					}
 				}
 			}
+		},
+		raycastForMap: function raycastForMap ( raycaster, intersects ) {
+			var geometry = this.geometry
+			var material = this.material
+			var matrixWorld = this.matrixWorld
+
+			if ( material === undefined ) return // Checking boundingSphere distance to ray
+			if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere()
+
+			_sphere.copy( geometry.boundingSphere )
+			_sphere.applyMatrix4( matrixWorld )
+
+			if ( raycaster.ray.intersectsSphere( _sphere ) === false ) return
+
+			_inverseMatrix.copy( matrixWorld ).invert()
+
+			_ray.copy( raycaster.ray ).applyMatrix4( _inverseMatrix ) // Check boundingBox before continuing
+
+			if ( geometry.boundingBox !== null ) {
+				if ( _ray.intersectsBox( geometry.boundingBox ) === false ) return
+			}
+
+			var intersection = checkBufferGeometryIntersectionForMap( this )
+
+			if ( intersection ) intersects.push( intersection )
 		}
 	});
 
@@ -9402,6 +9430,23 @@ function Handler_M3D ( category ) {
 			point: _intersectionPointWorld.clone(),
 			object: object
 		};
+	}
+
+	function checkIntersectionForMap( object, point ) {
+		_intersectionPointWorld.copy( point )
+		_intersectionPointWorld.applyMatrix4( object.matrixWorld )
+
+		console.log( _intersectionPointWorld )
+
+		return {
+			point: _intersectionPointWorld.clone()
+		}
+	}
+
+	function checkBufferGeometryIntersectionForMap( object ) {
+		var intersection = checkIntersectionForMap( object, _intersectionPoint )
+
+		return intersection
 	}
 
 	function checkBufferGeometryIntersection(object, material, raycaster, ray, position, morphPosition, morphTargetsRelative, uv, uv2, a, b, c) {
@@ -34887,6 +34932,12 @@ function Handler_M3D ( category ) {
 		return a.distance - b.distance
 	}
 
+	function _intersectMap ( object, raycaster, intersects, recursive ) {
+		if ( object.layers.test( raycaster.layers ) ) {
+			object.raycastForMap( raycaster, intersects )
+		}
+	}
+
 	function _intersectObject ( object, raycaster, intersects, recursive ) {
 		if ( object.layers.test( raycaster.layers ) ) {
 			object.raycast( raycaster, intersects )
@@ -34919,6 +34970,14 @@ function Handler_M3D ( category ) {
 			} else {
 				console.error( 'threeD.Raycaster: Unsupported camera type: ' + camera.type )
 			}
+		},
+		intersectMap: function intersectMap ( object, recursive, optionalTarget ) {
+			var intersects = optionalTarget || []
+
+			_intersectMap( object, this, intersects, recursive )
+
+			intersects.sort( ascSort )
+			return intersects
 		},
 		intersectObject: function intersectObject ( object, recursive, optionalTarget ) {
 			var intersects = optionalTarget || []
@@ -38462,6 +38521,7 @@ function Handler_M3D ( category ) {
 		this.initialized = false
 		this.instances = {}
 		this.inScene = false
+		this.mult = 2
 		this.type = 'Map'
 
 		this.elev = {

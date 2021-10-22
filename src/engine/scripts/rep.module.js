@@ -1,5 +1,7 @@
 import * as core from './core.module.js'
 
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from './libs/meshbvh.module.js'
+
 import * as handler_canvas from './handlers/canvas.module.js'
 import * as handler_file from './handlers/file.module.js'
 import * as handler_ui from './handlers/ui.module.js'
@@ -13,6 +15,10 @@ UIREP = new handler_ui.handler( 'UI' ),
 M3DREP = new handler_m3d.handler(),
 MATHREP = new handler_math.handler( 'Math' ),
 TIMEREP = new handler_time.handler( 'Time' )
+
+M3DREP.geometry.buffer.default.prototype.computeBoundsTree = computeBoundsTree
+M3DREP.geometry.buffer.default.prototype.disposeBoundsTree = disposeBoundsTree
+M3DREP.mesh.default.prototype.raycast = acceleratedRaycast
 
 export { 
     CANVASREP, CANVASREP as canvas,

@@ -4,9 +4,26 @@
 // would be very useful to the core of JS but it seems they
 // are not which really sucks. 
  
-export function init () {
+function init () {
     return new Promise( resolve => {
         window.App = document
+        window.programName = 'Program'
+
+        window.repeat = {
+            clear: repeater => clearInterval( repeater ),
+            seconds: ( method, seconds ) => setInterval( method, seconds * 1000 ),
+            milliseconds: ( method, milliseconds ) => setInterval( method, milliseconds ),
+        }
+
+        window.wait = {
+            clear: waiter => clearTimeout( waiter ),
+            seconds: ( method, seconds ) => setTimeout( method, seconds * 1000 ),
+            milliseconds: ( method, milliseconds ) => setTimeout( method, milliseconds ),
+        }
+
+        window.setProgramName = function ( name = 'Program' ) {
+            this.programName = name
+        }
 
         /* Change the prototype of document */ 
         document.gEBI = document.getElementById
@@ -36,11 +53,12 @@ export function init () {
         Element.prototype.qSA = Element.prototype.querySelectorAll
 
         Element.prototype.create = function () {
-            const _this = this
+            const element = this
 
             return {
-                menu: ( id ) => _this.render( `<menu id='${ id ? id : '' }'></menu>` ),
-                state: ( id ) => _this.render( `<state id='${ id ? id : '' }'></state>` ),
+                canvas: ( id ) => element.render( `<canvas id='${ id ? id : '' }'></canvas>` ),
+                menu: ( id ) => element.render( `<menu id='${ id ? id : '' }'></menu>` ),
+                state: ( id ) => element.render( `<state id='${ id ? id : '' }'></state>` ),
 
                 dropdown: () => {}
             }
@@ -84,14 +102,36 @@ export function init () {
             }
         }
 
-        Element.prototype.state = function ( id ) {
+        Element.prototype.canvas = function ( id ) {
             if ( id ) {
-                const states = this.gEBTN( 'STATE' )
+                const states = this.qSA( 'canvas' )
 
                 let found = null
 
                 for ( let i = 0; i < states.length; i++ ) {
-                    if ( states[ i ].id == id ) found = states[ i ]
+                    if ( states[ i ].id == id ) {
+                        found = states[ i ]
+
+                        break
+                    }
+                }
+
+                return found
+            }
+        }
+
+        Element.prototype.state = function ( id ) {
+            if ( id ) {
+                const states = this.qSA( 'state' )
+
+                let found = null
+
+                for ( let i = 0; i < states.length; i++ ) {
+                    if ( states[ i ].id == id ) {
+                        found = states[ i ]
+
+                        break
+                    }
                 }
 
                 if ( found != null ) return found
@@ -134,3 +174,77 @@ export function init () {
         resolve()
     } )
 }
+
+const Event = class {
+    constructor () {
+        this.happening = false
+        this.repeater = null
+        this.waiter = null
+
+        this.toggle = {
+            repeat: {
+                seconds: seconds => {
+                    this.clearRepeater()
+                    this.on()
+
+                    this.repeater = setInterval( () => this.off(), seconds * 1000 )
+                },
+                milliseconds: milliseconds => {
+                    this.clearRepeater()
+                    this.on()
+
+                    this.repeater = setInterval( () => this.off(), milliseconds )
+                },
+            },
+            wait: {
+                seconds: seconds => {
+                    this.clearWaiter()
+                    this.on()
+
+                    this.repeater = setTimeout( () => this.off(), seconds * 1000 )
+                },
+                milliseconds: milliseconds => {
+                    this.clearWaiter()
+                    this.on()
+
+                    this.repeater = setTimeout( () => this.off(), milliseconds )
+                },
+            },
+        }
+    }
+
+    clearRepeater () {
+        if ( this.repeater ) clearInterval( this.repeater )
+    }
+
+    clearWaiter () {
+        if ( this.waiter ) clearTimeout( this.waiter )
+    }
+
+    isOn () {
+        if ( this.happening ) return true
+        else return false
+    }
+
+    off () {
+        this.happening = false
+    }
+
+    on () {
+        this.happening = true
+    }
+}
+
+class Events {
+    constructor () {
+        this.window = {
+            resizing: new Event(),
+
+            mouse: {
+                inside: new Event(),
+            },
+        }
+    }
+}
+
+export { Events as events, init }

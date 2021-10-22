@@ -36,6 +36,7 @@ class Environment {
             defaults.camera.near, 
             defaults.camera.far 
         ) 
+
         // camera = new reps.m3d.camera.flat( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -2000, 2000 )
         
         this.alwaysResize = !options ? defaults.alwaysResize : !options.alwaysResize ? defaults.alwaysResize : typeof options.alwaysResize == 'boolean' ? options.alwaysResize : defaults.alwaysResize
@@ -78,12 +79,12 @@ class Environment {
         this.controls.maxDistance = 300
         this.controls.enablePan = true
 
-        this.camera.position.set( 194.6, 398.8, 310.9 ) // ortho - 225.38, 281.34, 288.30
-        this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
+        this.camera.position.set( 0, 32, 21 ) // ortho - 225.38, 281.34, 288.30
+        // this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
         // this.camera.zoom = 1.8506178062217096 // perspective - don't alter
         this.camera.updateMatrixWorld()
 
-		this.controls.target = new reps.m3d.vec3( 69.1, 5, 132.9 ) // ortho - 1.77, 5, 12.37 
+		this.controls.target = new reps.m3d.vec3( 0, 0, 0 ) // perspective - 69.1, 5, 132.9
 
         this.scene.background = new reps.m3d.color( 0x000000 )
 
@@ -136,19 +137,28 @@ class Environment {
     }
 
     resize () {
-        switch ( this.alwaysResize ) {
-            case false:
-                if ( this.container.isShowing == true ) {
+        return new Promise( resolve => {
+            this.renderers.webgl.setPixelRatio( window.devicePixelRatio )
+
+            switch ( this.alwaysResize ) {
+                case false:
+                    if ( this.container.isShowing == true ) {
+                        this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
+                        this.renderers.css.setSize( this.container.offsetWidth, this.container.offsetHeight )
+                    }
+    
+                    break
+                case true:
                     this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     this.renderers.css.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                }
+                    break
+            }
 
-                break
-            case true:
-                this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                this.renderers.css.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                break
-        }
+            this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight
+            this.camera.updateProjectionMatrix()
+
+            resolve()
+        } )
     }
 }
 

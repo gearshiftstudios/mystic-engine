@@ -1,0 +1,49 @@
+state#macromap-generation interface-rt#macromap-generation-panel {
+  width: 43vh;
+  height: 60vh;
+  margin: 6.5vh 0vh 0vh 0vh;
+  border-radius: 0.5vh 0vh 0vh 0.5vh;
+  border-right: none;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#size {
+  margin-top: 5vh;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#size input-image[f] {
+  background-image: url("../assets/interface/map.100.large.green.svg");
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#size input-image[l] {
+  background-image: url("../assets/interface/map.1000.large.green.svg");
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#elevation {
+  margin-top: 8vh;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#elevation input-image[f] {
+  background-image: url("../assets/interface/waves.blue.svg");
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#elevation input-image[l] {
+  background-image: url("../assets/interface/mountain.brown.svg");
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel leaflet#fractal {
+  margin-top: 11vh;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel button-lb#accept, state#macromap-generation interface-rt#macromap-generation-panel button-lb#regenerate {
+  width: 10vh;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel button-lb#accept {
+  margin: 0vh 0vh 1vh 1vh;
+  background-color: darkgreen;
+}
+
+state#macromap-generation interface-rt#macromap-generation-panel button-lb#regenerate {
+  margin: 0vh 0vh 1vh 15vh;
+}
+/*# sourceMappingURL=state@macromap-generation.min.css.map */

@@ -5,9 +5,15 @@
     	<meta charset='utf-8'>
     	<meta name='viewport' content='width=device-width'>
     	<title>Mystic Engine- Terrain Example</title>
-    	<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=EB+Garamond&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+
+		<link href="styles/interface.min.css" rel="stylesheet">
+		<link href="styles/minimap.min.css" rel="stylesheet">
+
+		<link href="styles/state@macromap-generation.min.css" rel="stylesheet">
+		<link href="styles/state@loading.min.css" rel="stylesheet">
 
 		<style>
 			body {
@@ -20,7 +26,7 @@
 				overflow: hidden;
 			}
 
-			#debug-canvas {
+			canvas#debug {
 				display: none;
 			}
 		</style>
@@ -28,6 +34,54 @@
 		<script src='scripts/main.module.js' type='module'></script>
   	</head>
   	<body>
-		<canvas id='debug-canvas'></canvas>
+		<state id='loading' style='display: inline-block;'>
+			<background></background>
+
+			<loader-lb id='loader-pre'>
+				<bar></bar>
+				<text></text>
+			</loader-lb>
+			<loader-lb id='loader-macromap'>
+				<bar></bar>
+				<text></text>
+			</loader-lb>
+		</state>
+		<!-- <loader-lb id='loader-nations'>
+			<bar></bar>
+			<text></text>
+		</loader-lb> -->
+
+		<state id='macromap-generation'>
+			<interface-rt wood-metal id='macromap-generation-panel'>
+				<header-lt large ribbon-green>Map Generation</header-lt>
+				<leaflet fixed f id='size'>
+					<label>Size (Tiles Squared)</label>
+					<input-image f></input-image>
+					<input images type='range' min='100' max='1000' step='100' value='200'>
+					<input-image l></input-image>
+				</leaflet>
+				<leaflet fixed s id='elevation'>
+					<label>Elevation</label>
+					<input-image f></input-image>
+					<input images type='range' min='0' max='35' value='20'>
+					<input-image l></input-image>
+				</leaflet>
+				<leaflet fixed f id='fractal'>
+					<label>Fractal Intensity</label>
+					<input type='range' min='1' max='3' step='0.25' value='2'>
+				</leaflet>
+
+				<button-lb wood-metal large id='accept'>Accept</button-lb>
+				<button-lb wood-metal large id='regenerate'>Regenerate</button-lb>
+			</interface-rt>
+		</state>
+
+		<state id='minimap-ui'>
+			<interface-rb wood-metal id='minimap'>
+				<view id='minimap-view'></view>
+			</interface-rb>
+		</state>
+		
+		<state id='debug'></state>
   	</body>
 </html>

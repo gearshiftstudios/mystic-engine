@@ -131,4 +131,17 @@ Stats.Panel = function ( name, fg, bg ) {
 	}
 }
 
-export { Stats }
+const element = new Stats()
+
+function init () {
+	return new Promise( resolve => {
+		element.showPanel( 0 )
+
+		App.body.isShowing = true
+    	App.body.appendChild( element.dom )
+
+		resolve()
+	} )
+}
+
+export { Stats as class, element, init }

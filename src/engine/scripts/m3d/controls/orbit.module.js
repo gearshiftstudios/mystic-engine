@@ -295,10 +295,20 @@ const OrbitControls = function ( object, domElement ) {
         sphericalDelta.phi -= angle
     }
 
-    const panLeft = function () {
+    this.panTo = function () {
+        return function panTo ( left, up, objectMatrix = scope.object.matrix ) {
+            const tarX = scope.target.x,
+                tarZ = scope.target.z
+
+            scope.panLeft( tarX - left, objectMatrix )
+            scope.panUp( tarZ - up, objectMatrix )
+        }
+    }()
+
+    this.panLeft = function () {
         const v = new M3DREP.vec3()
 
-        return function panLeft ( distance, objectMatrix ) {
+        return function panLeft ( distance, objectMatrix = scope.object.matrix ) {
             v.setFromMatrixColumn( objectMatrix, 0 ) // get X column of objectMatrix
             v.multiplyScalar( - distance )
 
@@ -306,10 +316,10 @@ const OrbitControls = function ( object, domElement ) {
         }
     }()
 
-    const panUp = function () {
+    this.panUp = function () {
         const v = new M3DREP.vec3()
 
-        return function panUp ( distance, objectMatrix ) {
+        return function panUp ( distance, objectMatrix = scope.object.matrix ) {
             if ( scope.screenSpacePanning === true ) v.setFromMatrixColumn( objectMatrix, 1 )
             else {
                 v.setFromMatrixColumn( objectMatrix, 0 )
@@ -339,11 +349,11 @@ const OrbitControls = function ( object, domElement ) {
 
                 targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 )
 
-                panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix )
-                panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix )
+                scope.panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix )
+                scope.panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix )
             } else if ( scope.object.isFlatCamera ) {
-                panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix )
-                panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix )
+                scope.panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix )
+                scope.panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix )
             } else {
                 console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' )
 
