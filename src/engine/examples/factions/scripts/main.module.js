@@ -66,6 +66,11 @@ class Program extends EProg {
                 .add( 'Plotting Land' )
                 .add( 'Cartographing Geography' )
                 .add( 'Marking Flaura' )
+                .add( 'Charting Borders' )
+                .add( 'Analyzing Weather' )
+                .add( 'Publishing Cartography' )
+                .add( 'Printing Findings' )
+                .add( 'Reviewing with Crew' )
 
             loader.onStart( () => {
                 document.body.state( 'macromap-generation' ).hide()

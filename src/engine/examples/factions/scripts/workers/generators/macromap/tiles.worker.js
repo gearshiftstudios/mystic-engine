@@ -5,7 +5,7 @@ onmessage = e => {
                 this.a = face1
                 this.b = face2
                 this.biome = biome
-                this.center = center // [ x, y ]
+                this.center = center // [ x, z, y ]
                 this.faces = [ face1, face2 ]
                 this.vertices = vertices
                 this.hasTree = Math.random() >= biomes[ biome ][ 1 ]
@@ -19,6 +19,9 @@ onmessage = e => {
     const chunkFaces = e.data[ 0 ],
         chunkVertices = e.data[ 1 ],
         biomes = e.data[ 2 ],
+        mapWidth = e.data[ 3 ],
+        mapHeight = e.data[ 4 ],
+        chunkSize = e.data[ 5 ],
 
         chunkTiles = new Array()
 
@@ -73,7 +76,7 @@ onmessage = e => {
                         chunkVertices[ ixcf ].nonIndexed[ points[ 0 ][ 2 ] ].position[ 0 ] +
                         chunkVertices[ ixcf ].nonIndexed[ points[ 0 ][ 3 ] ].position[ 0 ]
                     ) / 4,
-                    (
+                    -(
                         chunkVertices[ ixcf ].nonIndexed[ points[ 0 ][ 0 ] ].position[ 1 ] +
                         chunkVertices[ ixcf ].nonIndexed[ points[ 0 ][ 1 ] ].position[ 1 ] +
                         chunkVertices[ ixcf ].nonIndexed[ points[ 0 ][ 2 ] ].position[ 1 ] +
@@ -109,5 +112,38 @@ onmessage = e => {
         chunkTiles.push( tiles )
     } )
 
-    postMessage( [ chunkTiles ] )
+    let ix = 0
+
+    const allTiles = new Array()
+
+    for ( 
+        let h = -( ( mapHeight / 2 ) - ( chunkSize / 2 ) ); 
+        h < mapHeight / 2; 
+        h += chunkSize
+    ) {
+        for ( 
+            let w = -( ( mapWidth / 2 ) - ( chunkSize / 2 ) ); 
+            w < mapWidth / 2; 
+            w += chunkSize
+        ) {
+            chunkTiles[ ix ].forEach( t => {
+                const cx = w + t.center[ 0 ],
+                    cy = h + t.center[ 1 ]
+
+                allTiles.push( new classes.tile(
+                    t.a, 
+                    t.b,
+                    t.vertices,
+                    new Array( cx, cy, t.center[ 2 ] ), 
+                    t.biome,
+                    t.isCliff,
+                    t.isCoast
+                ) )
+            } )
+
+            ix++
+        }
+    }
+
+    postMessage( [ chunkTiles, allTiles ] )
 }

@@ -306,10 +306,20 @@ class Handler_Map extends Program_Module {
 
     /* new */ 
 
-    chunk_generateMacro ( mult = 2 ) {
+    generateMacro ( mult = 2 ) {
         return new Promise( resolve => {
-            function finish () {
+            const finish = () => {
+                this.animateWater = true
+
+                program.environments.main.controls.maxDistance = program.macromap.size.width / 1.667
+    
+                handler_minimap.rep.update.pixels()
+    
+                MAPGROUP.water.geometry.attributes.position.needsUpdate = true
+                MAPGROUP.animateWater = true
                 MAPGROUP.initialized = true
+    
+                program.loader( 'macromap' ).finishTask()
 
                 resolve()
             }
@@ -345,12 +355,28 @@ class Handler_Map extends Program_Module {
                                                     this.separateChunkTilesByBiome().then( () => {
                                                         program.loader( 'macromap' ).finishTask()
 
-                                                        finish()
-
                                                         this.generateChunkTreeInstances().then( () => {
                                                             program.loader( 'macromap' ).finishTask()
 
-                                                            finish()
+                                                            this.generateBackground().then( () => {
+                                                                program.loader( 'macromap' ).finishTask()
+
+                                                                this.generateWater().then( () => {
+                                                                    program.loader( 'macromap' ).finishTask()
+    
+                                                                    handler_minimap.rep.generate().then( () => {
+                                                                        handler_minimap.rep.init().then( () => {
+                                                                            program.loader( 'macromap' ).finishTask()
+    
+                                                                            this.checkPreset().then( () => {
+                                                                                program.loader( 'macromap' ).finishTask()
+
+                                                                                finish()
+                                                                            } )
+                                                                        } )
+                                                                    } )
+                                                                } )
+                                                            } )
                                                         } )
                                                     } )
                                                 } )
@@ -894,6 +920,47 @@ class Handler_Map extends Program_Module {
 
     regenerateChunks () {
         return new Promise( resolve => {
+            if ( MAPGROUP.instances.trees ) {
+                for ( const t in MAPGROUP.instances.trees ) {
+                    for ( const _t in MAPGROUP.instances.trees[ t ] ) {
+                        MAPGROUP.remove( MAPGROUP.instances.trees[ t ][ _t ] )
+                    }
+                }
+            }
+
+            if ( MAPGROUP.chunks != null && MAPGROUP.chunks.length > 0 ) {
+                for ( let i = 0; i < MAPGROUP.chunks.length; i++ ) {
+                    MAPGROUP.remove( MAPGROUP.chunks[ i ].mesh )
+                }
+
+                MAPGROUP.chunks = new Array()
+            }
+
+            if ( MAPGROUP.water != null ) {
+                MAPGROUP.remove( MAPGROUP.water )
+
+                MAPGROUP.water = null
+
+                if ( this.timelines.water != null ) {
+                    this.timelines.water.kill()
+                    this.timelines.water = null
+                }
+            }
+
+            if ( MAPGROUP.background ) {
+                if ( MAPGROUP.background.paper != null ) {
+                    MAPGROUP.remove( MAPGROUP.background.paper )
+                   
+                    MAPGROUP.background.paper = null
+                }
+
+                if ( MAPGROUP.background.grid != null ) {
+                    MAPGROUP.remove( MAPGROUP.background.grid )
+                   
+                    MAPGROUP.background.grid = null
+                }
+            }
+
             resolve()
         } )
     }
@@ -1189,7 +1256,10 @@ class Handler_Map extends Program_Module {
             worker.postMessage( [ 
                 MAPGROUP.chunkFaces,
                 MAPGROUP.chunkVertices,
-                this.biomes
+                this.biomes,
+                MAPGROUP.size.width,
+                MAPGROUP.size.height,
+                this.settings.chunk.size
             ] )
 
             worker.onmessage = e => {
@@ -1198,6 +1268,8 @@ class Handler_Map extends Program_Module {
 
                     MAPGROUP.chunkTiles.push( c.tiles )
                 } )
+
+                MAPGROUP.allTiles = e.data[ 1 ]
 
                 resolve()
             }
@@ -1211,7 +1283,8 @@ class Handler_Map extends Program_Module {
             worker.postMessage( [ 
                 MAPGROUP.chunkTiles,
                 this.biomes,
-                JSON.stringify( this.trees )
+                JSON.stringify( this.trees ),
+                MAPGROUP.allTiles
             ] )
 
             worker.onmessage = e => {
@@ -1225,241 +1298,16 @@ class Handler_Map extends Program_Module {
                     MAPGROUP.chunkTiles.push( c.tiles )
                 } )
 
-                resolve()
-            }
-        } )
-    }
-
-    generateTreeInstances () {
-        return new Promise ( resolve => {
-            // MAPGROUP.instances.trees = {}
-
-            // const dummy = new engine.m3d.object3D()
-
-            // for ( const b in this.trees ) {
-            //     for ( const h in this.trees[ b ] ) {
-            //         const trees = []
-
-            //         if ( MAPGROUP.tilesByBiome[ b ] ) {
-            //             for ( let i = 0; i < MAPGROUP.tilesByBiome[ b ].length; i++ ) {
-            //                 if ( MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].hasTree && 
-            //                     MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType && 
-            //                     MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType == h 
-            //                 ) {
-            //                     trees.push( MAPGROUP.tilesByBiome[ b ][ i ] )
-            //                 }
-            //             }
-            //         }
-                    
-            //         const uniScale = this.trees[ b ][ h ].uniScale
-            //         const geometry = this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].geometry.clone()
-            //         const material = this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].material
-
-            //         if ( !MAPGROUP.instances.trees[ b ] ) MAPGROUP.instances.trees[ b ] = {}
-    
-            //         MAPGROUP.instances.trees[ b ][ h ] = new engine.m3d.mesh.instanced( geometry, material, trees.length )
-            //         MAPGROUP.instances.trees[ b ][ h ].castShadow = true
-
-            //         trees.forEach( ( t, ix ) => {
-            //             let randomScale = uniScale + engine.math.random.number.between( 0, 0.05 )
-
-            //             dummy.position.set( 
-            //                 MAPGROUP.tiles[ t ].center[ 0 ] + engine.math.random.number.between( -0.25, 0.25 ),
-            //                 MAPGROUP.tiles[ t ].center[ 2 ] + engine.math.random.number.between( -0.2, 0.1 ),
-            //                 -MAPGROUP.tiles[ t ].center[ 1 ] + engine.math.random.number.between( -0.25, 0.25 )
-            //             )
-
-            //             dummy.rotation.y = engine.m3d.util.math.degToRad( engine.math.random.number.between( -360, 360 ) )
-
-            //             dummy.scale.set( randomScale, randomScale, randomScale )
-
-            //             switch ( b ) {
-            //                 case 'trop-rain': case 'trop-seasonal': case 'sub-trop-desert':
-            //                     randomScale = 0.035 + engine.math.random.number.between( 0, 0.005 )
-
-            //                     dummy.rotation.set(
-            //                         engine.m3d.util.math.degToRad( engine.math.random.number.between( -15, 15 ) ),
-            //                         engine.m3d.util.math.degToRad( engine.math.random.number.between( -360, 360 ) ),
-            //                         engine.m3d.util.math.degToRad( engine.math.random.number.between( -15, 15 ) )
-            //                     )
-
-            //                     break
-            //             }
-
-            //             dummy.scale.set( randomScale, randomScale, randomScale )
-
-            //             dummy.castShadow = true
-            //             dummy.receiveShadow = true
-
-            //             dummy.updateMatrix()
-
-            //             MAPGROUP.instances.trees[ b ][ h ].setMatrixAt( ix, dummy.matrix )
-
-            //             MAPGROUP.instances.trees[ b ][ h ].instanceMatrix.needsUpdate = true
-            //         } )
-
-            //         MAPGROUP.add( MAPGROUP.instances.trees[ b ][ h ] )
-            //     }
-            // }
-
-            resolve()
-        } )
-    }
-
-    
-    /* old */ 
-    generateMacro ( mult = 2 ) {
-        return new Promise( resolve => {
-            program.loader( 'macromap' ).start()
-
-            this.generateHeightmapCanvas().then( () => {
-                this.generateValues( 
-                    mult, 
-                    mult, 
-                    0.6, 
-                    'none',
-                    MAPGROUP.size.width, 
-                    MAPGROUP.size.width, 
-                    0.5,
-                    MAPGROUP.biomePreset
-                ).then( values => {
-                    program.loader( 'macromap' ).finishTask()
-
-                    console.log( MAPGROUP.biomePreset )
-    
-                    this.regenerate( values.heightMap, values.biomeMap ).then( data => {
-                        program.loader( 'macromap' ).finishTask()
-    
-                        this.createMesh( data.width, data.height, data.heightMap, data.biomeMap ).then( geoParams => {
-                            program.loader( 'macromap' ).finishTask()
-    
-                            this.generateFog( geoParams ).then( () => {
-                                program.loader( 'macromap' ).finishTask()
-    
-                                this.generatePeaks( geoParams ).then( () => {
-                                    program.loader( 'macromap' ).finishTask()
-    
-                                    this.generateCrust( geoParams ).then( () => {
-                                        program.loader( 'macromap' ).finishTask()
-    
-                                        this.generateFaces().then( () => {
-                                            program.loader( 'macromap' ).finishTask()
-    
-                                            this.generateColors( geoParams ).then( () => {
-                                                program.loader( 'macromap' ).finishTask()
-    
-                                                this.loadTrees().then( () => {
-                                                    program.loader( 'macromap' ).finishTask()
-    
-                                                    this.generateTiles().then( () => {
-                                                        program.loader( 'macromap' ).finishTask()
-    
-                                                        this.separateTilesByBiome().then( () => {
-                                                            program.loader( 'macromap' ).finishTask()
-    
-                                                            this.generateTreeInstances().then( () => {
-                                                                program.loader( 'macromap' ).finishTask()
-    
-                                                                this.generateBackground( geoParams ).then( () => {
-                                                                    program.loader( 'macromap' ).finishTask()
-    
-                                                                    this.generateWater( geoParams ).then( () => {
-                                                                        program.loader( 'macromap' ).finishTask()
-        
-                                                                        handler_minimap.rep.generate().then( () => {
-                                                                            handler_minimap.rep.init().then( () => {
-                                                                                program.loader( 'macromap' ).finishTask()
-        
-                                                                                this.checkPreset().then( () => {
-                                                                                    program.loader( 'macromap' ).finishTask()
-
-                                                                                    this.animateWater()
-
-                                                                                    program.environments.main.controls.maxDistance = program.macromap.size.width / 1.667
-                                                                                    
-                                                                                    MAPGROUP.fog.geometry.attributes.position.needsUpdate = true
-                                                                                    MAPGROUP.fog.visible = false
-        
-                                                                                    handler_minimap.rep.update.pixels()
-        
-                                                                                    MAPGROUP.water.geometry.attributes.position.needsUpdate = true
-                                                                                    MAPGROUP.animateWater = true
-                                                                                    MAPGROUP.initialized = true
-        
-                                                                                    program.loader( 'macromap' ).finishTask()
-        
-                                                                                    resolve()
-                                                                                } )
-                                                                            } )
-                                                                        } )
-                                                                    } )
-                                                                } )
-                                                            } )
-                                                        } )
-                                                    } )
-                                                } )
-                                            } )
-                                        } )
-                                    } )
-                                } )
-                            } )
-                        } )
-                    } )
-                } )
-            } )
-        } )
-    }
-
-    generateBackground ( geoParams ) {
-        return new Promise( resolve => {
-            const width = ( geoParams.width - 2 ) * 5,
-                height = ( geoParams.height - 2 ) * 5,
-                gridColor = 0x2b1a06
-
-            const texture = new engine.m3d.loader.texture().load( './assets/backgrounds/paper.1080.seamless.nt.png' )
-            texture.wrapS = engine.m3d.repeatWrapping
-            texture.wrapT = engine.m3d.repeatWrapping
-            texture.repeat.set( 20, 20 )
-
-            MAPGROUP.background = {
-                paper: new engine.m3d.mesh.default(
-                    new engine.m3d.geometry.buffer.plane( width, height, 1, 1 ),
-                    new engine.m3d.mat.mesh.basic( { flatShading: true, map: texture } )
-                ),
-                grid: new engine.m3d.helper.grid( width, width / 8, gridColor, gridColor ),
-            }
-
-            MAPGROUP.background.paper.position.y = -0.6
-            MAPGROUP.background.paper.rotation.x = engine.m3d.util.math.degToRad( -90 )
-
-            MAPGROUP.background.grid.position.y = -0.6
-
-            MAPGROUP.add( MAPGROUP.background.paper )
-            MAPGROUP.add( MAPGROUP.background.grid )
-
-            resolve()
-        } )
-    }
-
-    generateTiles () {
-        return new Promise ( resolve => {
-            const worker = new Worker( './scripts/workers/generators/tiles.worker.js' )
-
-            worker.postMessage( [ 
-                MAPGROUP.faces,
-                JSON.stringify( MAPGROUP.vertices ),
-                this.biomes
-            ] )
-
-            worker.onmessage = e => {
-                MAPGROUP.tiles = e.data[ 0 ]
+                MAPGROUP.allTiles = e.data[ 3 ]
+                MAPGROUP.allTilesByBiome = JSON.parse( e.data[ 4 ] )
+                MAPGROUP.allWaterTiles = e.data[ 5 ]
 
                 resolve()
             }
         } )
     }
 
-    generateTreeInstances () {
+    generateChunkTreeInstances () {
         return new Promise ( resolve => {
             MAPGROUP.instances.trees = {}
 
@@ -1469,13 +1317,13 @@ class Handler_Map extends Program_Module {
                 for ( const h in this.trees[ b ] ) {
                     const trees = []
 
-                    if ( MAPGROUP.tilesByBiome[ b ] ) {
-                        for ( let i = 0; i < MAPGROUP.tilesByBiome[ b ].length; i++ ) {
-                            if ( MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].hasTree && 
-                                MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType && 
-                                MAPGROUP.tiles[ MAPGROUP.tilesByBiome[ b ][ i ] ].treeType == h 
+                    if ( MAPGROUP.allTilesByBiome[ b ] ) {
+                        for ( let i = 0; i < MAPGROUP.allTilesByBiome[ b ].length; i++ ) {
+                            if ( MAPGROUP.allTiles[ MAPGROUP.allTilesByBiome[ b ][ i ] ].hasTree && 
+                                MAPGROUP.allTiles[ MAPGROUP.allTilesByBiome[ b ][ i ] ].treeType && 
+                                MAPGROUP.allTiles[ MAPGROUP.allTilesByBiome[ b ][ i ] ].treeType == h 
                             ) {
-                                trees.push( MAPGROUP.tilesByBiome[ b ][ i ] )
+                                trees.push( MAPGROUP.allTilesByBiome[ b ][ i ] )
                             }
                         }
                     }
@@ -1493,9 +1341,9 @@ class Handler_Map extends Program_Module {
                         let randomScale = uniScale + engine.math.random.number.between( 0, 0.05 )
 
                         dummy.position.set( 
-                            MAPGROUP.tiles[ t ].center[ 0 ] + engine.math.random.number.between( -0.25, 0.25 ),
-                            MAPGROUP.tiles[ t ].center[ 2 ] + engine.math.random.number.between( -0.2, 0.1 ),
-                            -MAPGROUP.tiles[ t ].center[ 1 ] + engine.math.random.number.between( -0.25, 0.25 )
+                            MAPGROUP.allTiles[ t ].center[ 0 ] + engine.math.random.number.between( -0.25, 0.25 ),
+                            MAPGROUP.allTiles[ t ].center[ 2 ] + engine.math.random.number.between( -0.2, 0.1 ),
+                            MAPGROUP.allTiles[ t ].center[ 1 ] + engine.math.random.number.between( -0.25, 0.25 )
                         )
 
                         dummy.rotation.y = engine.m3d.util.math.degToRad( engine.math.random.number.between( -360, 360 ) )
@@ -1535,7 +1383,38 @@ class Handler_Map extends Program_Module {
         } )
     }
 
-    generateWater ( geoParams ) {
+    generateBackground () {
+        return new Promise( resolve => {
+            const width = MAPGROUP.size.width * 5,
+                height = MAPGROUP.size.height * 5,
+                gridColor = 0x2b1a06
+
+            const texture = new engine.m3d.loader.texture().load( './assets/backgrounds/paper.1080.seamless.nt.png' )
+            texture.wrapS = engine.m3d.repeatWrapping
+            texture.wrapT = engine.m3d.repeatWrapping
+            texture.repeat.set( 20, 20 )
+
+            MAPGROUP.background = {
+                paper: new engine.m3d.mesh.default(
+                    new engine.m3d.geometry.buffer.plane( width, height, 1, 1 ),
+                    new engine.m3d.mat.mesh.basic( { flatShading: true, map: texture } )
+                ),
+                grid: new engine.m3d.helper.grid( width, width / 8, gridColor, gridColor ),
+            }
+
+            MAPGROUP.background.paper.position.y = -0.6
+            MAPGROUP.background.paper.rotation.x = engine.m3d.util.math.degToRad( -90 )
+
+            MAPGROUP.background.grid.position.y = -0.6
+
+            MAPGROUP.add( MAPGROUP.background.paper )
+            MAPGROUP.add( MAPGROUP.background.grid )
+
+            resolve()
+        } )
+    }
+
+    generateWater () {
         return new Promise ( resolve => {
             const worker = new Worker( './scripts/workers/generators/water.worker.module.js', {
                 type: 'module'
@@ -1576,8 +1455,8 @@ class Handler_Map extends Program_Module {
             worker.postMessage( [ 
                 MAPGROUP.waterGeo[ 0 ].attributes.position.array,
                 MAPGROUP.waterGeo[ 1 ].attributes.position.array,
-                geoParams.heightMap.width - 2,
-                geoParams.heightMap.height - 2
+                MAPGROUP.size.width + 1,
+                MAPGROUP.size.height + 1
             ] )
 
             worker.onmessage = e => {
@@ -1618,7 +1497,6 @@ class Handler_Map extends Program_Module {
     }
 
     /* read *.mobjx file and export LOD */ 
-
     loadTreeLOD ( file ) {
         return new Promise ( resolve => {
             engine.file.mystic.retrieve( `./objects/trees/${ file }.mobjx` ).then( data => { // retrieve the data from the file
@@ -1660,89 +1538,6 @@ class Handler_Map extends Program_Module {
 
                 resolve()
             }
-        } )
-    }
-
-    regenerate ( heightMap, biomeMap ) {
-        return new Promise( resolve => {
-            if ( MAPGROUP.instances.trees ) {
-                for ( const t in MAPGROUP.instances.trees ) {
-                    for ( const _t in MAPGROUP.instances.trees[ t ] ) {
-                        MAPGROUP.remove( MAPGROUP.instances.trees[ t ][ _t ] )
-                    }
-                }
-            }
-
-			if ( MAPGROUP.mesh != null ) MAPGROUP.remove( MAPGROUP.mesh )
-            if ( MAPGROUP.fog != null ) MAPGROUP.remove( MAPGROUP.fog )
-
-			MAPGROUP.mesh = null
-            MAPGROUP.fog = null
-
-            if ( MAPGROUP.water != null ) {
-                MAPGROUP.remove( MAPGROUP.water )
-
-                if ( this.timelines.water != null ) {
-                    this.timelines.water.kill()
-                    this.timelines.water = null
-                }
-            }
-
-            if ( MAPGROUP.background ) {
-                if ( MAPGROUP.background.paper != null ) {
-                    MAPGROUP.remove( MAPGROUP.background.paper )
-                   
-                    MAPGROUP.background.paper = null
-                }
-
-                if ( MAPGROUP.background.grid != null ) {
-                    MAPGROUP.remove( MAPGROUP.background.grid )
-                   
-                    MAPGROUP.background.grid = null
-                }
-            }
-
-            const data = {
-                width: MAPGROUP.size.width,
-                height: MAPGROUP.size.height,
-                heightMap: heightMap,
-                biomeMap: biomeMap,
-            }
-
-			resolve( data )
-        } )
-    }
-
-    createMesh ( width, height, heightMap, biomeMap ) {
-        return new Promise( resolve => {
-            const geoParams = {
-                width: width + 2,
-                height: height + 2,
-                heightMap: heightMap,
-                biomeMap: biomeMap,
-            }
-
-            MAPGROUP.mesh = new engine.m3d.mesh.default(
-                new engine.m3d.geometry.buffer.plane( 
-                    geoParams.width,
-                    geoParams.height,
-                    geoParams.width,
-                    geoParams.height
-                ),
-                new engine.m3d.mat.mesh.standard( {
-                    flatShading: true,
-                    vertexColors: engine.m3d.vertexColors,
-                } )
-            )
-            
-            MAPGROUP.mesh.castShadow = true
-            MAPGROUP.mesh.receiveShadow = true
-            MAPGROUP.mesh.rotation.x = engine.m3d.util.math.degToRad( -90 )
-            MAPGROUP.mesh.geometry.attributes.position.needsUpdate = true
-
-            MAPGROUP.add( MAPGROUP.mesh )
-
-            resolve( geoParams )
         } )
     }
 
@@ -1822,589 +1617,15 @@ class Handler_Map extends Program_Module {
         } )
     }
 
-    generatePeaks ( geoParams ) {
-        return new Promise( resolve => {
-            const worker = new Worker( './scripts/workers/generators/peaks.worker.js' )
-
-            worker.postMessage( [ 
-                MAPGROUP.mesh.geometry.attributes.position.array,
-                geoParams.heightMap.data,
-                geoParams.heightMap.width,
-                geoParams.heightMap.height,
-                MAPGROUP.elev.min,
-                MAPGROUP.elev.max
-            ] )
-
-            worker.onmessage = e => {
-                MAPGROUP.mesh.geometry.attributes.position.array = e.data[ 0 ]
-                MAPGROUP.fog.geometry.attributes.position.array = e.data[ 0 ]
-                MAPGROUP.vertices = JSON.parse( e.data[ 1 ] )
-
-                resolve()
-            }
-        } )
-    }
-
-    generateCrust ( geoParams ) {
-        return new Promise( resolve => {
-            MAPGROUP.vertices.indexed.forEach( v => {
-                if ( !v.surface ) {
-                    v.position[ 2 ] = -10
-                    if ( v.position[ 0 ] == geoParams.width / 2 ) v.position[ 0 ] = ( geoParams.width / 2 ) - 1
-                    if ( v.position[ 1 ] == geoParams.height / 2 ) v.position[ 1 ] = ( geoParams.height / 2 ) - 1
-                    if ( v.position[ 0 ] == - ( geoParams.width / 2 ) ) v.position[ 0 ] = - ( geoParams.width / 2 ) + 1
-                    if ( v.position[ 1 ] == - ( geoParams.height / 2 ) ) v.position[ 1 ] =  - ( geoParams.height / 2 ) + 1
-    
-                    v.indexes.forEach( ( i, index ) => MAPGROUP.mesh.geometry.attributes.position.array[ i ] = v.position[ index ] )
-                }
-            } )
-
-            resolve()
-        } ) 
-    }
-
-    generateFaces () {
-        return new Promise( resolve => {
-            MAPGROUP.faces = new Array()
-
-        let face = new this.face(),
-        indexedCount = 0,
-        nonIndexedCount = 0,
-        faceCount = 0
-
-        MAPGROUP.mesh.geometry.index.array.forEach( v => {
-            face.vertices.indexed.push( v )
-
-            indexedCount++
-
-            if ( indexedCount == 3 ) {
-                MAPGROUP.faces.push( face )
-
-                indexedCount = 0
-                
-                face = new this.face()
-            }
-        } )
-
-        const vertices_copy = MAPGROUP.vertices,
-        faces_copy = MAPGROUP.faces
-
-        let newGeo = MAPGROUP.mesh.geometry.toNonIndexed()
-
-        MAPGROUP.mesh.geometry = newGeo
-        MAPGROUP.vertices = vertices_copy
-        MAPGROUP.faces = faces_copy
-
-        let vertex = new this.vertex(),
-            count = 0
-
-        MAPGROUP.mesh.geometry.attributes.position.array.forEach( ( v, index ) => {
-            vertex.indexes.push( index )
-            vertex.position.push( v )
-
-            count++
-
-            if ( count == 3 ) {
-                MAPGROUP.vertices.nonIndexed.push( vertex )
-
-                count = 0
-                
-                vertex = new this.vertex()
-            }
-        } )
-
-        MAPGROUP.vertices.nonIndexed.forEach( ( v, index ) => {
-            MAPGROUP.faces[ faceCount ].vertices.nonIndexed.push( index )
-
-            nonIndexedCount++
-
-            if ( nonIndexedCount == 3 ) {
-                nonIndexedCount = 0
-
-                faceCount++
-            }
-        } )
-
-        resolve()
-        } )
-    }
-
-    generateColors ( geoParams ) {
-        return new Promise( resolve => {
-            MAPGROUP.mesh.geometry.setAttribute( 'color', new engine.m3d.attribute.buffer( 
-                new Float32Array( MAPGROUP.vertices.nonIndexed.length * 3 ), 
-                3 
-            ) )
-    
-            const color = new engine.m3d.color(),
-                colorXYZ = MAPGROUP.mesh.geometry.attributes.color
-    
-            let tileNum = 0
-    
-            MAPGROUP.faces.forEach( ( f, ixf ) => {
-                f.isCliff = false
-                f.isCoast = false
-                f.isCrust = false
-        
-                const min = f.calcMinHeight( false )
-                const max = f.calcMaxHeight( false )
-    
-                /* get tile that this face belongs to */
-                if ( ixf % 2 == 0 ) {
-                    f.tile = tileNum
-    
-                    tileNum++
-                } else f.tile = tileNum - 1
-    
-                /* color this face based upon biomeMap's value */
-                f.biome = geoParams.biomeMap[ f.tile ]
-    
-                // 0 = tundra
-                // 1 = taiga
-                // 2 = temp grassland
-                // 3 = temp decid forest
-                // 4 = temp conif forest
-                // 5 = sub trop desert
-                // 6 = savanna
-                // 7 = trop seasonal forest
-                // 8 = trop rainforest
-    
-                switch ( f.biome ) {
-                    case 0:
-                        f.terrainColor = 0x8a9488
-                        break
-                    case 1:
-                        f.terrainColor = 0x214010
-                        break
-                    case 2:
-                        f.terrainColor = 0x174000
-                        break
-                    case 3:
-                        f.terrainColor = 0x174000
-                        break
-                    case 4:
-                        f.terrainColor = 0x102e00
-                        break
-                    case 5:
-                        f.terrainColor = 0xeecc44
-                        break
-                    case 6:
-                        f.terrainColor = 0x4a4924
-                        break
-                    case 7:
-                        f.terrainColor = 0x0d2600 // 0xd1a128 tree leaves
-                        break
-                    case 8:
-                        f.terrainColor = 0x0d2600
-                        break
-                }
-                    
-                /* assign colors based upon the elev of points within face */
-                if ( min >= MAPGROUP.elev.min - 0.3 && min < MAPGROUP.elev.min + 0.75 ) {
-                    if ( f.biome == 0 ) {
-                        f.isCliff = true
-    
-                        f.terrainColor = 0x5c5c5c // cliff
-                    } else {
-                        f.isCoast = true
-    
-                        f.terrainColor = 0xb8a763 // shore
-                    }
-                }
-    
-                if ( max >= MAPGROUP.elev.min + 7.5 && min < MAPGROUP.elev.min + 7.5 ) {
-                    f.isCliff = true
-    
-                    f.terrainColor = 0x452b01 // mesa-side
-                }
-                    
-                if ( min == MAPGROUP.elev.min && max == MAPGROUP.elev.min ) {
-                    f.terrainColor = 0xb8a763
-                }
-
-                if ( min < MAPGROUP.elev.min - 1 ) {
-                    f.isCrust = true
-
-                    f.terrainColor = 0x452b01
-                }
-    
-                color.setHex( f.terrainColor )
-    
-                f.vertices.nonIndexed.forEach( v => {
-                    colorXYZ.setXYZ( v, color.r, color.g, color.b )
-                } )
-            } )
-    
-            colorXYZ.needsUpdate = true
-
-            resolve()
-        } )
-    }
-
     scaleOut ( val, smin, smax, emin, emax ) {
         const tx = ( val - smin ) / ( smax - smin )
 
         return ( emax - emin ) * tx + emin
     }
 
-    generateValues ( _mainMulti, _secondMulti, _exp, _mask, _width, _height, _seaLevel, _biomePreset ) {
-        return new Promise( resolve => {
-            let canvas = App.body.state( 'debug' ).canvas( 'debug' ),
-                ctx = canvas.getContext( '2d' ),
-    
-                cellSize = 1,
-    
-                multiplierPerlin = _mainMulti,
-                octaveMulti = _secondMulti,
-                exp = _exp,
-                mask = _mask,
-                width = _width + 3,
-                height = _height + 3,
-                seaLevel = _seaLevel
-    
-            canvas.width = width * cellSize
-            canvas.height = height * cellSize
-    
-            let heightMap = [],
-                tempMap = [],
-                moistMap = [],
-                biomeMap = [],
-                archipelagoMask = [],
-                grtLakesMask = []
-    
-        function convertTo1D ( map ) {
-            let out = []
-
-            for ( let y = 0; y < height; y++ ) {
-                for ( let x = 0; x < width; x++ ) out.push( map[ x ][ y ] )
-            }
-
-            return ( out )
-        }
-    
-        function draw () {
-            ctx.clearRect( 0, 0, canvas.width, canvas.height )
-          
-            for ( let x = 0; x < width; x++ ) {
-                for ( let y = 0; y < height; y++ ) {
-                    if (
-                        x != 0 &&
-                        x != width - 1 && 
-                        y != 0 && 
-                        y != height - 1
-                    ) ctx.fillStyle = `rgb(${ heightMap[ x ][ y ]*  255 },${ heightMap[ x ][ y ] * 255 },${ heightMap[ x ][ y ] * 255 })`
-                    else ctx.fillStyle = 'rgb(0,0,0)'
-
-                    ctx.fillRect( x * cellSize, y * cellSize, cellSize, cellSize )
-                }
-            }
-        }
-    
-        function initMasks () {
-            for ( let x = 0; x < width; x++ ) {
-                archipelagoMask.push( [] )
-
-                for ( let y = 0; y < height; y++ ) {
-                    let nx = x / width - 0.5,
-                        ny = y / height - 0.5,
-                        d = Math.sqrt( nx * nx + ny * ny ) / Math.sqrt( 0.5 )
-
-                    archipelagoMask[x][y] = d
-                }
-            }
-
-            for ( let x = 0; x < width; x++ ) {
-                grtLakesMask.push( [] )
-
-                for ( let y = 0; y < height; y++ ) {
-                    let nx = x / width - 0.5,
-                        ny = y / height - 0.5,
-                        d = Math.sqrt( nx * nx + ny * ny ) / Math.sqrt( 0.5 )
-                        
-                    d = Math.pow( d, 2.5 )
-
-                    grtLakesMask[ x ] [y ] = -d
-                }
-            }
-        }
-    
-        function initHM () {
-            noise.seed( Math.random() )
-
-            for ( let x = 0; x < width; x++ ) {
-                heightMap.push( [] )
-
-                for ( let y = 0; y < height; y++ ) {
-                    let nx = x / width - 0.5,
-                        ny = y / height - 0.5,
-                        e = 1 * octaveMulti * noise.perlin2( 1 * nx * multiplierPerlin * octaveMulti, 1 * ny * multiplierPerlin * octaveMulti )
-                        + 0.5 * octaveMulti * noise.perlin2( 2 * nx * multiplierPerlin * octaveMulti, 2 * ny * multiplierPerlin * octaveMulti )
-                        + 0.25 * octaveMulti * noise.perlin2( 4 * nx * multiplierPerlin * octaveMulti, 4 * ny * multiplierPerlin * octaveMulti )
-
-                    e = e / ( 1 + 0.5 + 0.25 )
-                    e += 1.0
-                    e /= 2.0
-    
-                    if ( e <= seaLevel ) e = 0
-    
-                    e -= seaLevel
-
-                    if ( mask !== 'great lakes' ) {
-                        if ( e <= 0 ) e = 0
-                    } else {
-                        if  (e <= 0 ) e = 0
-                    }
-
-                    let value = e
-                    value = Math.pow( e, exp )
-
-                    heightMap[ x ][ y ] = value
-                }
-            }
-        }
-    
-        function initTM () {
-            noise.seed( Math.random() )
-
-            for ( let x = 0; x < width; x++ ) {
-                tempMap.push( [] )
-
-                for ( let y = 0; y < height; y++ ) {
-                    let nx = x / width - 0.5,
-                        ny = y / height - 0.5
-
-                    tempMap[ x ][ y ] = noise.perlin2( nx * multiplierPerlin, ny * multiplierPerlin )
-                }
-            }
-        }
-    
-        function initMM () {
-            noise.seed( Math.random() )
-            
-            for ( let x = 0; x < width; x++ ) {
-                moistMap.push( [] )
-
-                for ( let y = 0; y < height; y++ ) {
-                    let nx = x / width - 0.5,
-                        ny = y / height - 0.5
-
-                    moistMap[ x ][ y ] = noise.perlin2( nx * multiplierPerlin, ny * multiplierPerlin )
-                }
-            }
-        }
-    
-        // 0 = tundra
-        // 1 = taiga
-        // 2 = temp grassland
-        // 3 = temp decid forest
-        // 4 = temp conif forest
-        // 5 = sub trop desert
-        // 6 = savanna
-        // 7 = trop seasonal forest
-        // 8 = trop rainforest
-    
-        function biomeCheck () {
-            // console.log(tempMap)
-            for ( let x = 0; x < width; x++ ) {
-                biomeMap.push( [] )
-                for ( let y = 0; y < height; y++ ) {
-                    switch ( _biomePreset ) {
-                        case 0:
-                            if ( tempMap[ x ][ y ] <= -0.3) biomeMap[ x ][ y ] = 0
-                            else if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else if ( moistMap[ x ][ y ] <= 0.2  ) biomeMap[ x ][ y ] = 7
-                                else biomeMap[ x ][ y ] = 8
-                            }
-
-                            break
-                        case 1: 
-                            if ( moistMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else if ( moistMap[ x ][ y ] <= 0.2  ) biomeMap[ x ][ y ] = 7
-                                else biomeMap[ x ][ y ] = 8
-                            }
-
-                            break
-                        case 2: 
-                            if ( tempMap[ x ][ y ] <= -0.3) biomeMap[ x ][ y ] = 0
-                            else if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 3
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else biomeMap[ x ][ y ] = 6
-                            }
-
-                            break
-                        case 3: 
-                            if ( tempMap[ x ][ y ] <= -0.3) biomeMap[ x ][ y ] = 0
-                            else if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= 0.2  ) biomeMap[ x ][ y ] = 7
-                                else biomeMap[ x ][ y ] = 8
-                            }
-
-                            break
-                        case 4: 
-                            if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else biomeMap[ x ][ y ] = 2
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 3
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else biomeMap[ x ][ y ] = 7
-                            }
-
-                            break
-                        case 5: 
-                            if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else if ( moistMap[ x ][ y ] <= 0.2  ) biomeMap[ x ][ y ] = 7
-                                else biomeMap[ x ][ y ] = 8
-                            }
-
-                            break
-                        case 6: 
-                            if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else if ( moistMap[ x ][ y ] <= 0.2  ) biomeMap[ x ][ y ] = 7
-                                else biomeMap[ x ][ y ] = 8
-                            }
-
-                            break
-                        case 7: 
-                            if ( tempMap[ x ][ y ] <= -0.3) biomeMap[ x ][ y ] = 0
-                            else if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else if ( moistMap[ x ][ y ] <= 0.3 ) biomeMap[ x ][ y ] = 3
-                                else biomeMap[ x ][ y ] = 4
-                            }
-
-                            break
-                        case 8: 
-                            if ( tempMap[ x ][ y ] <= -0.3) biomeMap[ x ][ y ] = 0
-                            else if ( tempMap[ x ][ y ] <= -0.1 ) {
-                                if ( moistMap[ x ][ y ] <= -0.45 ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.35 ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 1
-                            } else if ( tempMap[ x ][ y ] <= 0.35 ) {
-                                if ( moistMap[ x ][ y ] <= -0.425  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.3  ) biomeMap[ x ][ y ] = 2
-                                else biomeMap[ x ][ y ] = 3
-                            } else {
-                                if ( moistMap[ x ][ y ] <= -0.35  ) biomeMap[ x ][ y ] = 5
-                                else if ( moistMap[ x ][ y ] <= -0.275  ) biomeMap[ x ][ y ] = 6
-                                else biomeMap[ x ][ y ] = 7
-                            }
-
-                            break
-                    }
-                }
-            }
-        }
-    
-        function applyMask ( mask ) {
-            switch ( mask ) {
-                case 'archipelago':
-                    for ( let x = 0; x < width; x++ ) {
-                        for ( let y = 0; y < height; y++ ) heightMap[ x ][ y ] -= archipelagoMask[ x ][ y ] / 1.25
-                    }
-
-                    break
-                case 'great lakes':
-                    for ( let x = 0; x < width; x++ ) {
-                        for ( let y = 0; y < height; y++ ) {
-                            
-                            heightMap[ x ][ y ] += ( grtLakesMask[ x ][ y ] ) * 1.5
-
-                            if ( heightMap[ x ][ y ] <= 0 ) heightMap[ x ][ y ] = 0
-                            
-                            heightMap[ x ][ y ] -= 0.5
-                            heightMap[ x ][ y ] *= -1
-                            heightMap[ x ][ y ] += 0.2
-
-                            if ( heightMap[ x ][ y ] < 0.7 ) heightMap[ x ][ y ] *= 0.5
-                        }
-                    }
-
-                    break
-                }
-            }
-    
-            initMasks()
-            initHM()
-            applyMask( mask )
-            initTM()
-            initMM()
-            biomeCheck()
-            draw()
-
-            console.log( ctx.getImageData( 0, 0, 51, 51 ) )
-
-            resolve( {
-                biomeMap: convertTo1D( biomeMap ),
-                heightMap: ctx.getImageData( 0, 0, canvas.width, canvas.height ),    
-            } )
-        } )
-    }
-
     init () {
         return new Promise( resolve => {
-            this.chunk_generateMacro( this.settings.mult ).then( () => {
+            this.generateMacro( this.settings.mult ).then( () => {
                 this.log.output( 'Map Handler has been initialized' ).reg()
 
                 resolve()
