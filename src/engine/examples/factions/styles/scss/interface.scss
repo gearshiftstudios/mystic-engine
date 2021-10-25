@@ -91,14 +91,25 @@ header {
             font-size: 2vh;
         }
 
-        &[ ribbon-green ] {
-            background-image: url( '../assets/interface/ribbon.green.tileable.svg' );
+        &[ ribbon-blue ], &[ ribbon-green ], &[ ribbon-red ] {
             background-size: 3vh 3vh;
             background-repeat: repeat-x;
 
             &[ large ] {
                 background-size: 4vh 4vh;
             }
+        }
+
+        &[ ribbon-blue ] {
+            background-image: url( '../assets/interface/ribbon.blue.tileable.svg' );
+        }
+
+        &[ ribbon-green ] {
+            background-image: url( '../assets/interface/ribbon.green.tileable.svg' );
+        }
+
+        &[ ribbon-red ] {
+            background-image: url( '../assets/interface/ribbon.red.tileable.svg' );
         }
     }
 
@@ -167,9 +178,46 @@ leaflet {
             padding: 0.5vh 1vh 0.5vh 1vh;
             text-align: center;
             text-shadow: 0 0 1vh black;
+
+            &[ check ] {
+                margin-left: 3vh;
+            }
+
+            
+        }
+
+        &[ locked-f ], &[ locked-nr ], &[ locked-nav ], &[ locked-nap ] {
+            filter: grayscale( 0.5 );
+
+            & label {
+                color: grey;
+            }
+
+            & input {
+                &[ type='checkbox' ] {
+                    opacity: 0.5;
+                }
+
+                &[ type='range' ] {
+                    opacity: 0.5;
+                }
+            }
         }
 
         & input {
+            &[ type='checkbox' ] {
+                position: absolute;
+                left: 0;
+                top: 0;
+                
+                width: 2vh;
+                height: 2vh;
+
+                margin: 0.5vh 0vh 0vh 1vh;
+
+                box-shadow: 0 0 1vh black, inset 0 0 1vh black;
+            }
+
             &[ type='range' ] {
                 position: absolute;
                 right: 0;
@@ -181,7 +229,7 @@ leaflet {
                 margin: 1.25vh 1vh 0vh 0vh;
 
                 appearance: none;
-                background-color: #606060;
+                background-color: #6a4d00;
                 border-radius: 0.25vh;
                 box-shadow: 0 0 1vh black, inset 0 0 0.1vh black;
                 outline: none;
@@ -194,21 +242,21 @@ leaflet {
                 }
 
                 &::-webkit-slider-thumb {
-                    width: 2vh;
-                    height: 2vh;
+                    width: 1.5vh;
+                    height: 1.5vh;
 
                     appearance: none;
-                    background-image: url( '../assets/interface/slider.thumb.wood-metal.svg' );
-                    background-size: 2vh 2vh;
-                    border-radius: 1vh;
+                    background-image: url( '../assets/interface/slider.thumb.wood-gold.svg' );
+                    background-size: 1.5vh 1.5vh;
+                    border-radius: 0.75vh;
                     transition: 0.25s;
                 }
 
                 &:hover {
-                    background-color: #6a4d00;
+                    background-color: #606060;
 
                     &::-webkit-slider-thumb {
-                        background-image: url( '../assets/interface/slider.thumb.wood-gold.svg' );
+                        background-image: url( '../assets/interface/slider.thumb.wood-metal.svg' );
                     }
                 }
             }
@@ -276,7 +324,7 @@ loader {
             left: 0;
             top: 0;
 
-            width: 100%;
+            width: 0%;
             height: 100%;
 
             background-color: turquoise;
@@ -338,4 +386,8 @@ state {
     display: none;
 
     pointer-events: none;
+}
+
+[ locked-f ], [ locked-nr ], [ locked-nav ], [ locked-nap ] {
+    filter: grayscale( 1 );
 }

@@ -56,8 +56,6 @@ class Hanlder_UI extends Handler {
                                 )
                             }
                         }
-
-                        console.log( this.list )
                     } 
 
                     resolve()

@@ -290,6 +290,4 @@ var noise = {};
          v);
     };
 
-  console.log( noise )
-
   export { noise }

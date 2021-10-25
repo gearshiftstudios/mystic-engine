@@ -1,5 +1,5 @@
 import { Parser } from '../parser.module.js'
-import * as engine from '../../rep.module.js'
+import * as engine from '../../mystic.module.js'
 
 class Nation {
     constructor ( data ) {

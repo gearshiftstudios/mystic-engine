@@ -1,14 +1,26 @@
 $header-top: 5vh;
 
 state#macromap-generation {
-    & interface-rt#macromap-generation-panel {
+    & interface-lt#macromap-generation-panel {
         width: 43vh;
-        height: 60vh;
+        height: 84vh;
 
-        margin: 6.5vh 0vh 0vh 0vh;
+        margin: 1vh 0vh 0vh 0vh;
 
-        border-radius: 0.5vh 0vh 0vh 0.5vh;
-        border-right: none;
+        border-radius: 0vh 0.5vh 0.5vh 0vh;
+        border-left: none;
+
+        & header-lt#biome-presets {
+            margin-top: 14vh;
+        }
+
+        & header-lt#biome-trees {
+            margin-top: 44vh;
+        }
+
+        & header-lt#options {
+            margin-top: 74vh;
+        }
 
         & leaflet#size {
             margin-top: $header-top;
@@ -38,7 +50,83 @@ state#macromap-generation {
             margin-top: 11vh;
         }
 
-        & button-lb#accept, button-lb#regenerate {
+        /* biome presets */
+        & leaflet[ preset='0' ] {
+            margin-top: 17vh;
+        }
+
+        & leaflet[ preset='1' ] {
+            margin-top: 20vh;
+        }
+
+        & leaflet[ preset='2' ] {
+            margin-top: 23vh;
+        }
+
+        & leaflet[ preset='3' ] {
+            margin-top: 26vh;
+        }
+
+        & leaflet[ preset='4' ] {
+            margin-top: 29vh;
+        }
+
+        & leaflet[ preset='5' ] {
+            margin-top: 32vh;
+        }
+
+        & leaflet[ preset='6' ] {
+            margin-top: 35vh;
+        }
+
+        & leaflet[ preset='7' ] {
+            margin-top: 38vh;
+        }
+
+        & leaflet[ preset='8' ] {
+            margin-top: 41vh;
+        }
+
+        /* biome trees */
+        & leaflet[ biome='0' ] {
+            margin-top: 47vh;
+        }
+
+        & leaflet[ biome='1' ] {
+            margin-top: 50vh;
+        }
+
+        & leaflet[ biome='2' ] {
+            margin-top: 53vh;
+        }
+
+        & leaflet[ biome='3' ] {
+            margin-top: 56vh;
+        }
+
+        & leaflet[ biome='4' ] {
+            margin-top: 59vh;
+        }
+
+        & leaflet[ biome='5' ] {
+            margin-top: 62vh;
+        }
+
+        & leaflet[ biome='6' ] {
+            margin-top: 65vh;
+        }
+
+        & leaflet[ biome='7' ] {
+            margin-top: 68vh;
+        }
+
+        & leaflet[ biome='8' ] {
+            margin-top: 71vh;
+        }
+
+        /* major buttons */ 
+
+        & button-lb#accept, button-lb#regenerate, button-lb#reset {
             width: 10vh;
         }
 
@@ -50,6 +138,10 @@ state#macromap-generation {
 
         & button-lb#regenerate {
             margin: 0vh 0vh 1vh 15vh;
+        }
+
+        & button-lb#reset {
+            margin: 0vh 0vh 1vh 29vh;
         }
     }
 }

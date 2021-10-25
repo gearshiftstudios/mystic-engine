@@ -1,5 +1,5 @@
 import { Editor } from '../editor.module.js'
-import * as engine from '../../../../../engine/scripts/rep.module.js'
+import * as engine from '../../../../../engine/scripts/mystic.module.js'
 import * as m3d_gui from '../../../../../engine/scripts/m3d/gui/dat.gui.module.js'
 import * as m3e_loader_gltf from '../../../../../engine/scripts/m3d/loaders/gltfe.module.js'
 

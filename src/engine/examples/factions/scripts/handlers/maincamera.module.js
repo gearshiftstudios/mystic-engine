@@ -1,4 +1,4 @@
-import * as engine from '../../../../scripts/rep.module.js'
+import * as engine from '../../../../scripts/mystic.module.js'
 import * as m3d from '../../../../scripts/m3d/rep.module.js'
 
 import { Program_Module } from '../module.module.js'
@@ -13,20 +13,69 @@ class Handler_MainCamera extends Program_Module {
         this.elevOffset = 15
         this.helper = null
         this.minElev = 0
+        this.raycaster = null
+
+        this.coords = [ 
+            new Array(
+                new engine.m3d.vec2(),
+                new engine.m3d.vec2(),
+                new engine.m3d.vec2(),
+                new engine.m3d.vec2()
+            ),
+            new Array(
+                new engine.m3d.vec3(),
+                new engine.m3d.vec3(),
+                new engine.m3d.vec3(),
+                new engine.m3d.vec3()
+            ) 
+        ]
     }
 
     updateCameraElev () {
         const camera = program.environments.main.camera
 
-        const raycaster = new engine.m3d.ray.caster( camera.position.clone(), this.castDirection )
-        raycaster.firstHitOnly = true
+        /* lt */
+        this.coords[ 0 ][ 0 ].x = ( 0 / window.innerWidth ) * 2 - 1
+	    this.coords[ 0 ][ 0 ].y = - ( 0 / window.innerHeight ) * 2 + 1
+
+        /* rt */
+        this.coords[ 0 ][ 1 ].x = ( window.innerWidth / window.innerWidth ) * 2 - 1
+	    this.coords[ 0 ][ 1 ].y = - ( 0 / window.innerHeight ) * 2 + 1
+
+        /* lb */
+        this.coords[ 0 ][ 2 ].x = ( 0 / window.innerWidth ) * 2 - 1
+	    this.coords[ 0 ][ 2 ].y = - ( window.innerHeight / window.innerHeight ) * 2 + 1
+
+        /* rb */
+        this.coords[ 0 ][ 3 ].x = ( window.innerWidth / window.innerWidth ) * 2 - 1
+	    this.coords[ 0 ][ 3 ].y = - ( window.innerHeight / window.innerHeight ) * 2 + 1
+
+        this.raycaster = new engine.m3d.ray.caster()
+        this.raycaster.firstHitOnly = true
+
+        this.coords[ 0 ].forEach( ( c, ix ) => {
+            this.raycaster.setFromCamera( c, camera )
+
+            let intersections = this.raycaster.intersectObject( program.macromap, true )
+
+            if ( intersections.length > 0 ) {
+                this.coords[ 1 ][ ix ] = new engine.m3d.vec3(
+                    intersections[ 0 ].point.x,
+                    intersections[ 0 ].point.y,
+                    intersections[ 0 ].point.z
+                )
+            }
+        } )
+
+        this.raycaster = new engine.m3d.ray.caster( camera.position.clone(), this.castDirection )
+        this.raycaster.firstHitOnly = true
 
         this.castFrom.copy( camera.position )
         this.castFrom.y += 1000
 
-        raycaster.set( this.castFrom, this.castDirection )
+        this.raycaster.set( this.castFrom, this.castDirection )
 
-        var intersections = raycaster.intersectObject( program.macromap.mesh )
+        let intersections = this.raycaster.intersectObject( program.macromap, true )
 
         if ( intersections.length > 0 ) {
             this.minElev = intersections[ 0 ].point.y + this.elevOffset

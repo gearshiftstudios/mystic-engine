@@ -1,8 +1,7 @@
 /* import REPs */ 
-import * as reps from '../../rep.module.js'
+import * as reps from '../../mystic.module.js'
 
 /* import M3D */ 
-import * as renderers_css from '../renderers/css.module.js'
 import * as m3d_controls from '../controls/orbit.module.js'
 
 class Environment {
@@ -15,7 +14,7 @@ class Environment {
             alwaysResize: false,
 
             camera: {
-                far: 1000,
+                far: 2000,
                 fov: 75,
                 near: 1, 
                 type: reps.m3d.camera.depth,
@@ -43,12 +42,10 @@ class Environment {
         this.camera = !options ? camera : !options.camera ? camera : options.camera.isCamera ? options.camera : camera
         this.container = container ? container : document.body
         this.lights = {}
-        this.MUID = `environment.${ reps.m3d.util.math.MUID.generate() }`
+        this.MUID = `environment.${ reps.m3d.MUID.generate() }`
         this.scene = !options ? new reps.m3d.scene() : !options.scene ? new reps.m3d.scene() : options.scene.isScene ? options.scene : new reps.m3d.scene()
 
         this.renderers = {
-            css: new renderers_css.r2d(),
-
             webgl: new reps.m3d.renderer.webgl( { 
                 // alpha: true,
                 antialias: !options ? defaults.renderers.webgl.antialias : !options.rendererAntialias ? defaults.renderers.webgl.antialias : 
@@ -130,7 +127,6 @@ class Environment {
     render () {
         if ( this.container.isShowing == true ) {
             this.renderers.webgl.render( this.scene, this.camera )
-            this.renderers.css.render( this.scene, this.camera )
 
             if ( this.controls.shouldUpdate ) this.controls.update()
         }
@@ -144,13 +140,11 @@ class Environment {
                 case false:
                     if ( this.container.isShowing == true ) {
                         this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                        this.renderers.css.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     }
     
                     break
                 case true:
                     this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                    this.renderers.css.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     break
             }
 

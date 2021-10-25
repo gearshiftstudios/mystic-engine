@@ -1,4 +1,4 @@
-import * as engine from '../../../engine/scripts/rep.module.js'
+import * as engine from '../../../engine/scripts/mystic.module.js'
 import * as m3d_gui from '../../../engine/scripts/m3d/gui/dat.gui.module.js'
 
 import * as editor_object from './states/editors/object.module.js'

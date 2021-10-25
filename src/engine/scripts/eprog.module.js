@@ -1,5 +1,5 @@
 import { Log } from './log.module.js'
-import * as reps from './rep.module.js'
+import * as reps from './mystic.module.js'
 import * as m3d_enviroment from './m3d/environments/environment.module.js'
 
 import { Loader } from './loader.module.js'

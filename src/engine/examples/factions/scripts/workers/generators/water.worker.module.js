@@ -1,4 +1,4 @@
-import * as engine from '../../../../../scripts/rep.module.js'
+import * as engine from '../../../../../scripts/mystic.module.js'
 
 onmessage = e => {
     const classes = {

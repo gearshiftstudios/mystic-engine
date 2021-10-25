@@ -39,11 +39,11 @@
 
 			<loader-lb id='loader-pre'>
 				<bar></bar>
-				<text></text>
+				<text>Loading...</text>
 			</loader-lb>
 			<loader-lb id='loader-macromap'>
 				<bar></bar>
-				<text></text>
+				<text>Loading...</text>
 			</loader-lb>
 		</state>
 		<!-- <loader-lb id='loader-nations'>
@@ -52,8 +52,9 @@
 		</loader-lb> -->
 
 		<state id='macromap-generation'>
-			<interface-rt wood-metal id='macromap-generation-panel'>
+			<interface-lt wood-metal id='macromap-generation-panel'>
 				<header-lt large ribbon-green>Map Generation</header-lt>
+	
 				<leaflet fixed f id='size'>
 					<label>Size (Tiles Squared)</label>
 					<input-image f></input-image>
@@ -71,8 +72,105 @@
 					<input type='range' min='1' max='3' step='0.25' value='2'>
 				</leaflet>
 
+				<header-lt ribbon-blue id='biome-presets'>Biome Presets</header-lt>
+
+				<leaflet fixed f preset='0'>
+					<label check>Standard</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed s preset='1'>
+					<label check>Tropical</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed f preset='2'>
+					<label check>Western</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed s preset='3'>
+					<label check>Woodlands</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed f preset='4'>
+					<label check>Cradle of Civilization</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed s preset='5'>
+					<label check>Cradle of Humanity</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed f preset='6'>
+					<label check>Subtropical</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet locked-nr fixed s preset='7'>
+					<label check>Arctic</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<leaflet fixed f preset='8'>
+					<label check>Steppes</label>
+					<input type='checkbox'>
+				</leaflet>
+
+				<header-lt ribbon-blue id='biome-trees'>Biome Tree Density</header-lt>
+
+				<leaflet fixed f biome='0'>
+					<label>Tundra</label>
+					<input type='range' min='0' max='4' value='1'>
+				</leaflet>
+
+				<leaflet fixed s biome='1'>
+					<label>Taiga</label>
+					<input type='range' min='0' max='4' value='3'>
+				</leaflet>
+
+				<leaflet fixed f biome='2'>
+					<label>Temperate Grassland</label>
+					<input type='range' min='0' max='4' value='1'>
+				</leaflet>
+
+				<leaflet fixed s biome='3'>
+					<label>Temperate Deciduous</label>
+					<input type='range' min='0' max='4' value='3'>
+				</leaflet>
+
+				<leaflet fixed f biome='4'>
+					<label>Temperate Coniferous</label>
+					<input type='range' min='0' max='4' value='3'>
+				</leaflet>
+
+				<leaflet fixed s biome='5'>
+					<label>Subtropical Desert</label>
+					<input type='range' min='0' max='4' value='1'>
+				</leaflet>
+
+				<leaflet fixed f biome='6'>
+					<label>Savanna</label>
+					<input type='range' min='0' max='4' value='2'>
+				</leaflet>
+
+				<leaflet fixed s biome='7'>
+					<label>Tropical Seasonal</label>
+					<input type='range' min='0' max='4' value='4'>
+				</leaflet>
+
+				<leaflet fixed f biome='8'>
+					<label>Tropical Rainforest</label>
+					<input type='range' min='0' max='4' value='4'>
+				</leaflet>
+
+				<header-lt ribbon-blue id='options'>Options</header-lt>
+
 				<button-lb wood-metal large id='accept'>Accept</button-lb>
 				<button-lb wood-metal large id='regenerate'>Regenerate</button-lb>
+				<button-lb wood-metal large id='reset'>Reset</button-lb>
 			</interface-rt>
 		</state>
 

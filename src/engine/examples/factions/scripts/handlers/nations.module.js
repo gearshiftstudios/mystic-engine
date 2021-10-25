@@ -1,8 +1,7 @@
-import * as engine from '../../../../scripts/rep.module.js'
+import * as engine from '../../../../scripts/mystic.module.js'
 import * as m3d from '../../../../scripts/m3d/rep.module.js'
 
 import { Program_Module } from '../module.module.js'
-import * as interface_test_reps from '../interface/testrep.module.js'
 
 class Handler_Nations extends Program_Module {
     constructor ( category = 'Nations Handler' ) {
@@ -21,12 +20,6 @@ class Handler_Nations extends Program_Module {
             dropdown: {},
             general: new Array(),
             names: new Array(),
-        }
-
-        this.interface = {
-            test: {
-                picker: new interface_test_reps.nationpicker()
-            }
         }
     }
 
@@ -76,11 +69,9 @@ class Handler_Nations extends Program_Module {
     init () {
         return new Promise( resolve => {
             this.generateNations().then( () => {
-                this.interface.test.picker.init().then( () => {
-                    this.log.output( 'Nations Handler has been initialized' ).reg()
+                this.log.output( 'Nations Handler has been initialized' ).reg()
 
-                    resolve()
-                } )
+                resolve()
             } )
         } )
     }

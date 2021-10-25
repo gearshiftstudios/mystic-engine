@@ -1,5 +1,5 @@
 /* Import engine-side scripts */ 
-import * as engine from '../../../scripts/rep.module.js'
+import * as engine from '../../../scripts/mystic.module.js'
 import { EProg } from '../../../scripts/eprog.module.js'
 import * as stats from '../../../scripts/libs/stats.module.js'
 
@@ -11,6 +11,7 @@ import * as handler_nations from './handlers/nations.module.js'
 import * as handler_macromap from './handlers/macromap.module.js'
 import * as handler_maincamera from './handlers/maincamera.module.js'
 import * as handler_minimap from './handlers/minimap.module.js'
+import * as handler_settlement from './handlers/settlement.module.js'
 
 /* Create program class */ 
 class Program extends EProg {
@@ -25,6 +26,7 @@ class Program extends EProg {
         this.addHandler( 'macromap', handler_macromap.rep )
         this.addHandler( 'maincamera', handler_maincamera.rep )
         this.addHandler( 'minimap', handler_minimap.rep )
+        this.addHandler( 'settlement', handler_settlement.rep )
 
         this.addLoader( 'pre', document.getElementById( 'loader-pre' ) ).then( loader => {
             loader.add( 'Managing Cursors' )
@@ -36,22 +38,34 @@ class Program extends EProg {
         } )
 
         this.addLoader( 'macromap', document.getElementById( 'loader-macromap' ) ).then( loader => {
+            // loader.add( 'Discovering New Land' )
+            //     .add( 'Provoking Explorers' )
+            //     .add( 'Viewing Shorelines' )
+            //     .add( 'Thickening Fog' )
+            //     .add( 'Moving Mountains' )
+            //     .add( 'Mapping Erosion' )
+            //     .add( 'Surveying Land' )
+            //     .add( 'Coloring Terrain' )
+            //     .add( 'Analyzing Foliage' )
+            //     .add( 'Plotting Land' )
+            //     .add( 'Cartographing Geography' )
+            //     .add( 'Marking Flaura' )
+            //     .add( 'Charting Borders' )
+            //     .add( 'Analyzing Weather' )
+            //     .add( 'Publishing Cartography' )
+            //     .add( 'Printing Findings' )
+            //     .add( 'Reviewing with Crew' )
+
             loader.add( 'Discovering New Land' )
                 .add( 'Provoking Explorers' )
                 .add( 'Viewing Shorelines' )
-                .add( 'Thickening Fog' )
                 .add( 'Moving Mountains' )
-                .add( 'Mapping Erosion' )
                 .add( 'Surveying Land' )
                 .add( 'Coloring Terrain' )
                 .add( 'Analyzing Foliage' )
                 .add( 'Plotting Land' )
                 .add( 'Cartographing Geography' )
                 .add( 'Marking Flaura' )
-                .add( 'Charting Borders' )
-                .add( 'Analyzing Weather' )
-                .add( 'Publishing Cartography' )
-                .add( 'Reviewing with Crew' )
 
             loader.onStart( () => {
                 document.body.state( 'macromap-generation' ).hide()
@@ -84,10 +98,10 @@ class Program extends EProg {
                 this.macromap.initialized 
             ) {
                 /* Animate water if it exists & is turned on */
-                if ( 
-                    this.macromap.water && 
-                    this.macromap.animateWater 
-                ) this.macromap.water.geometry.attributes.position.needsUpdate = true
+                // if ( 
+                //     this.macromap.water && 
+                //     this.macromap.animateWater 
+                // ) this.macromap.water.geometry.attributes.position.needsUpdate = true
                 
                 this.handlers.maincamera.updateCameraElev()
                 
@@ -134,9 +148,6 @@ class Program extends EProg {
         /* initialize core element prototypes */
         engine.core.init().then( () => {
             this.loader( 'pre' ).start()
-
-            App.gEBI( 'm3d-gui.macromap' ).hide()
-            App.gEBI( 'm3d-gui.nationpicker' ).hide()
 
             engine.ui.cursors.multiload( ...cursors.list ).then( () => {
                 engine.ui.cursors.set( 'pointer.standard' ).then( () => {

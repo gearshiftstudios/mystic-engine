@@ -11,6 +11,7 @@ onmessage = e => {
                 this.hasTree = Math.random() >= biomes[ biome ][ 1 ]
                 this.isCliff = isCliff
                 this.isCoast = isCoast
+                this.settlementId = null
             }
         }
     }
@@ -18,6 +19,7 @@ onmessage = e => {
     const faces = e.data[ 0 ],
         vertices = JSON.parse( e.data[ 1 ] ),
         biomes = e.data[ 2 ],
+        width = e.data[ 3 ]
 
         tiles = new Array()
 
@@ -34,7 +36,8 @@ onmessage = e => {
                         c: f.vertices.nonIndexed[ 2 ],
                     },
                     f.isCliff,
-                    f.isCoast
+                    f.isCoast,
+                    f.isCrust
                 ], 
                 b: [
                     ix + 1,
@@ -44,14 +47,16 @@ onmessage = e => {
                         c: faces[ ix + 1 ].vertices.nonIndexed[ 2 ],
                     },
                     faces[ ix + 1 ].isCliff,
-                    faces[ ix + 1 ].isCoast
+                    faces[ ix + 1 ].isCoast,
+                    faces[ ix + 1 ].isCrust
                 ] 
             }
 
-            let cliff = false, coast = false
+            let cliff = false, coast = false, crust = false
 
             if ( face.a[ 2 ] || face.b[ 2 ] ) cliff = true
             if ( face.a[ 3 ] || face.b[ 3 ] ) coast = true
+            if ( face.a[ 4 ] || face.b[ 4 ] ) crust = true
 
             for ( const p in face.a[ 1 ] ) points[ 0 ].push( face.a[ 1 ][ p ] )
 
@@ -79,21 +84,23 @@ onmessage = e => {
                     vertices.nonIndexed[ points[ 0 ][ 3 ] ].position[ 2 ]
                 ) / 4
             )
-
-            tiles.push( new classes.tile( 
-                face.a[ 0 ], 
-                face.b[ 0 ],
-                [
-                    points[ 0 ][ 0 ],
-                    points[ 0 ][ 1 ],
-                    points[ 0 ][ 2 ],
-                    points[ 0 ][ 3 ]
-                ],
-                points[ 1 ], 
-                f.biome,
-                cliff,
-                coast
-            ) )
+            
+            if ( !crust ) {
+                tiles.push( new classes.tile( 
+                    face.a[ 0 ], 
+                    face.b[ 0 ],
+                    [
+                        points[ 0 ][ 0 ],
+                        points[ 0 ][ 1 ],
+                        points[ 0 ][ 2 ],
+                        points[ 0 ][ 3 ]
+                    ],
+                    points[ 1 ], 
+                    f.biome,
+                    cliff,
+                    coast
+                ) )
+            }
         }
     } )
 
