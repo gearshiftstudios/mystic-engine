@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,KAAK,CAAC;EACF,QAAQ,EAAE,QAAQ;EAClB,IAAI,EAAE,CAAC;EACP,GAAG,EAAE,CAAC;CACT",
+    "sources": [
+        "scss/group.scss"
+    ],
+    "names": [],
+    "file": "group.min.css"
+}

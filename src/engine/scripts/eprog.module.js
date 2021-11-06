@@ -11,25 +11,40 @@ class EProg {
         this.loaders = {}
         this.log = new Log( 'Main', false, false )
         this.name = name
+        this.modes = {}
 
         this.mouse = {
-            x: 0,
-            y: 0,
+            screen: new reps.m3d.vec2(),
+            world: new reps.m3d.vec2(),
         }
 
         this.environments = {
-            main: m3d_enviroment.create( mainEnvContainer )
-                .modify( {
-                    alwaysResize: true,
-                    name: 'main',
-                    subClass: 'main',
-                } ).store().retrieve(),
+            main: mainEnvContainer ? m3d_enviroment.create( mainEnvContainer )
+            .modify( {
+                alwaysResize: true,
+                name: 'main',
+                subClass: 'main',
+            } ).store().retrieve() : null,
             subs: {}
         } 
+
+        this.mode = class {
+            constructor ( active ) {
+                this.active = active
+            }
+
+            isActive () {
+                return this.active
+            }
+        }
     }
 
     addHandler ( name = Object.keys( this.handlers ).length + 1, handler ) {
-        this.handlers[ name ] = handler
+        return new Promise( resolve => {
+            this.handlers[ name ] = handler
+
+            resolve()
+        } )
     }
 
     addLoader ( 
@@ -43,6 +58,26 @@ class EProg {
 
             resolve( this.loaders[ name ] )
         } )
+    }
+
+    addMode ( name = Object.keys( this.modes ).length + 1, boolean ) {
+        this.modes[ name ] = new this.mode( !boolean ? false : typeof boolean == 'boolean' ? boolean : false )
+
+        return {
+            addSubset: ( ...args ) => {
+                return new Promise( resolve => {
+                    this.modes[ name ] = {}
+
+                    args.forEach( m => {
+                        if ( Array.isArray( m ) ) {
+                            if ( m[ 0 ] ) this.modes[ name ][ m[ 0 ] ] = new this.mode( m[ 1 ] ? m[ 1 ] : false )
+                        }
+                    } )
+
+                    resolve()
+                } )
+            }
+        }
     }
 
     handler ( name ) {

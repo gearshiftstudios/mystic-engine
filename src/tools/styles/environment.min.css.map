@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,WAAW,CAAC;EACR,QAAQ,EAAE,QAAQ;EAClB,IAAI,EAAE,CAAC;EACP,GAAG,EAAE,CAAC;EAEN,KAAK,EAAE,KAAK;EACZ,MAAM,EAAE,kBAAmB;EAE3B,MAAM,EAAE,gBAAgB;EAExB,gBAAgB,EAAE,OAAO;CAC5B",
+    "sources": [
+        "scss/environment.scss"
+    ],
+    "names": [],
+    "file": "environment.min.css"
+}

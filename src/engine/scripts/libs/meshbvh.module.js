@@ -2240,6 +2240,8 @@ function raycastFirst( nodeIndex32, mesh, geometry, raycaster, ray ) {
 
 		if ( c1Result && c2Result ) {
 
+			console.log( c1Result )
+
 			return c1Result.distance <= c2Result.distance ? c1Result : c2Result;
 
 		} else {

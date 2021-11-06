@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
- const Stats = function () {
+ const Stats = function ( outputElement = null ) {
 	var mode = 0,
 
 	container = document.createElement( 'div' )
@@ -52,6 +52,8 @@
 
 			if ( time >= prevTime + 1000 ) {
 				fpsPanel.update( ( frames * 1000 ) / ( time - prevTime ), 100 )
+
+				if( outputElement ) outputElement.insert( `FPS: ${ Math.round( ( frames * 1000 ) / ( time - prevTime ), 100 ) }` )
 
 				prevTime = time
 				frames = 0

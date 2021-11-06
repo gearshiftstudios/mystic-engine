@@ -11,6 +11,28 @@ const OrbitControls = function ( object, domElement ) {
     if ( domElement === undefined ) console.warn( 'THREE.OrbitControls: The second parameter "domElement" is now mandatory.' )
     if ( domElement === document ) console.error( 'THREE.OrbitControls: "document" should not be used as the target "domElement". Please use "renderer.domElement" instead.' )
 
+    var zoomEnd = 0;
+
+	this.zoomStart = 0
+
+	this.smoothZoom = true
+
+	this.smoothZoomUpdate = function () {
+        const distance = this.object.position.distanceTo( this.target )
+
+		var factor = 1.0 + ( zoomEnd - this.zoomStart ) * this.zoomSpeed
+		scale *= factor
+
+        if ( distance < 30 ) {
+            const angle = M3DREP.util.math.degToRad( 30 + factor )
+
+            this.maxPolarAngle = angle
+            this.minPolarAngle = angle
+        }
+
+		this.zoomStart += ( zoomEnd - this.zoomStart ) * this.dampingFactor
+	}
+
     this.object = object
     this.domElement = domElement
 
@@ -214,6 +236,8 @@ const OrbitControls = function ( object, domElement ) {
                 return true
             }
 
+            scope.smoothZoomUpdate()
+
             return false
         }
     }()
@@ -362,9 +386,13 @@ const OrbitControls = function ( object, domElement ) {
         }
     }()
 
+    this.angleAddFactor = 1
+    this.angleFactor = 0
+
     function dollyOut ( dollyScale ) {
-        if ( scope.object.isDepthCamera ) scale /= dollyScale
-        else if ( scope.object.isFlatCamera ) {
+        if ( scope.object.isDepthCamera ) {
+            scale /= dollyScale
+        } else if ( scope.object.isFlatCamera ) {
             scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) )
             scope.object.updateProjectionMatrix()
 
@@ -377,8 +405,9 @@ const OrbitControls = function ( object, domElement ) {
     }
 
     function dollyIn ( dollyScale ) {
-        if ( scope.object.isDepthCamera ) scale *= dollyScale
-        else if ( scope.object.isFlatCamera ) {
+        if ( scope.object.isDepthCamera ) {
+            scale *= dollyScale
+        } else if ( scope.object.isFlatCamera ) {
             scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) )
             scope.object.updateProjectionMatrix()
 
@@ -450,8 +479,26 @@ const OrbitControls = function ( object, domElement ) {
     function handleMouseUp ( /*event*/ ) { }
 
     function handleMouseWheel ( event ) {
-        if ( event.deltaY < 0 ) dollyIn( getZoomScale() )
-        else if ( event.deltaY > 0 ) dollyOut( getZoomScale() )
+
+        var delta = 0
+        
+        if ( scope.smoothZoom !== false ) {
+			if ( event.wheelDelta ) {
+				delta = event.wheelDelta / 40;
+			}
+
+			scope.zoomStart += delta * 0.001;
+		} else {
+			if ( event.wheelDelta !== undefined ) {
+				delta = event.wheelDelta
+			}
+
+			if ( delta > 0 ) {
+				scope.dollyOut( getZoomScale() );
+			} else if ( delta < 0 ) {
+				scope.dollyIn( getZoomScale() );
+			}
+		}
 
         scope.update()
     }

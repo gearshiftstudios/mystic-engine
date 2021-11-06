@@ -1,0 +1,26 @@
+pawn-label {
+    &[ simple ] {
+        background: rgba( 0, 0, 0, 0.7 );
+        border-radius: 5px;
+        box-shadow: 0 0 10px black, inset 0 0 10px black;
+        color: #ffffff;
+		font-family: 'Montserrat';
+        font-size: 15px;
+		padding: 5px 7.5px 5px 7.5px;
+
+        & owner {
+            color: turquoise;
+            display: inline;
+        }
+
+        & count {
+            color: magenta;
+            display: inline;
+        }
+
+        & health {
+            color: green;
+            display: inline;
+        }
+    }
+}

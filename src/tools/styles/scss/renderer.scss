@@ -1,0 +1,62 @@
+renderer {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: calc( 100% - 35px );
+
+    margin: 35px 0px 0px 0px;
+}
+
+renderer-info {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin: 40px 0px 0px 5px;
+
+    color: #424242;
+    font-family: 'universal';
+    font-size: 12px;
+    text-align: left;
+}
+
+renderer-memory {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin: 90px 0px 0px 5px;
+
+    color: magenta;
+    font-family: 'universal';
+    font-size: 12px;
+    text-align: left;
+}
+
+renderer-data {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin: 125px 0px 0px 5px;
+
+    color: #00ff00;
+    font-family: 'universal';
+    font-size: 12px;
+    text-align: left;
+}
+
+renderer-fps {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    margin: 190px 0px 0px 5px;
+
+    color: blue;
+    font-family: 'universal';
+    font-size: 12px;
+    text-align: left;
+}

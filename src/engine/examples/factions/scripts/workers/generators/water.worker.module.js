@@ -17,7 +17,7 @@ onmessage = e => {
     }
 
     const heightMapWidth = e.data[ 2 ]
-    const heightMapHeight = e.data[ 3 ]
+    const mapHeight = e.data[ 3 ]
 
     const waterVertices = {
         indexed: new Array(),
@@ -50,13 +50,13 @@ onmessage = e => {
         for ( let i = 0; i < waterGeo[ w ].length; i++ ) {
             count++
 
-            if ( count < 3 ) waterGeo[ w ][ i ] += engine.math.random.number.between( -0.35, 0.35 )
-            if ( count == 3 ) waterGeo[ w ][ i ] += engine.math.random.number.between( -0.15, 0.15 )
+            if ( count < 3 ) waterGeo[ w ][ i ] += engine.math.random.number.between( -0.15, 0.15 )
+            if ( count == 3 ) waterGeo[ w ][ i ] = engine.math.random.number.between( -0.15, 0.15 )
         }
 
-        for ( let hpx = 0; hpx < heightMapHeight; hpx++ ) {
-            for ( let wpx = 0; wpx < heightMapWidth; wpx++ ) {
-                const n = ( hpx * ( heightMapHeight ) + wpx ),
+        for ( let hpx = 0; hpx < ( mapHeight * 2 ) + 1; hpx++ ) {
+            for ( let wpx = 0; wpx < ( mapHeight * 2 ) + 1; wpx++ ) {
+                const n = ( hpx * ( ( mapHeight * 2 ) + 1 ) + wpx ),
     
                 vertex = waterVertices.indexed[ n ],
                 x = vertex.indexes[ 0 ],
@@ -64,12 +64,12 @@ onmessage = e => {
                 z = vertex.indexes[ 2 ]
     
                 if ( hpx != 0 &&
-                hpx != heightMapHeight - 1 &&
+                hpx != mapHeight * 2 &&
                 wpx != 0 &&
-                wpx != heightMapWidth - 1 ) {
-                    waterGeo[ w ][ x ] += engine.math.random.number.between( -0.35, 0.35 ) //jitter y
-                    waterGeo[ w ][ y ] += engine.math.random.number.between( -0.35, 0.35 ) //jitter x
-                    waterGeo[ w ][ z ] += engine.math.random.number.between( -0.15, 0.15 ) //jitter y
+                wpx != mapHeight * 2 ) {
+                    waterGeo[ w ][ x ] += engine.math.random.number.between( -0.15, 0.15 ) //jitter y
+                    waterGeo[ w ][ y ] += engine.math.random.number.between( -0.15, 0.15 ) //jitter x
+                    waterGeo[ w ][ z ] = engine.math.random.number.between( -0.05, 0.05 ) //jitter y
                 }
     
                 vertex.position[ 0 ] = waterGeo[ w ][ x ]

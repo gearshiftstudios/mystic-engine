@@ -305,8 +305,8 @@ const create = {
 
 				if ( type.length == 2 ) {
 					if ( type[ 0 ] == 'regular' || type[ 0 ] == 'buffer' ) {
-						if ( this.geometry[ type[ 0 ] ][ type[ 1 ] ] ) {
-							geometry = new this.geometry[ type[ 0 ] ][ type[ 1 ] ]( ...args )
+						if ( geometry[ type[ 0 ] ][ type[ 1 ] ] ) {
+							geometry = new geometry[ type[ 0 ] ][ type[ 1 ] ]( ...args )
 
 							verified = true
 						}
@@ -349,8 +349,8 @@ const create = {
 
 				switch ( type.length ) {
 					case 1:
-						if ( this.light[ type[ 0 ] ] ) {
-							light = new this.light[ type[ 0 ] ]( ...args )
+						if ( light[ type[ 0 ] ] ) {
+							light = new light[ type[ 0 ] ]( ...args )
 
 							verified = true
 						}
@@ -403,8 +403,8 @@ const create = {
 
 				switch ( type.length ) {
 					case 1:
-						if ( this.material[ type[ 0 ] ] ) {
-							material = new this.material[ type[ 0 ] ]( ...args )
+						if ( mat[ type[ 0 ] ] ) {
+							material = new mat[ type[ 0 ] ]( ...args )
 
 							verified = true
 						}
@@ -416,8 +416,8 @@ const create = {
 							type[ 0 ] == 'mesh' ||
 							type[ 0 ] == 'particle' 
 						) {
-							if ( this.material[ type[ 0 ] ][ type[ 1 ] ] ) {
-								material = new this.material[ type[ 0 ] ][ type[ 1 ] ]( ...args )
+							if ( mat[ type[ 0 ] ][ type[ 1 ] ] ) {
+								material = new mat[ type[ 0 ] ][ type[ 1 ] ]( ...args )
 
 								verified = true
 							}
@@ -50187,6 +50187,11 @@ const attribute = {
     uint8ClampedBuffer: Uint8ClampedBufferAttribute,
 }
 
+const audio = {
+    listener: AudioListener,
+    positional: PositionalAudio,
+}
+
 const camera = {
     default: Camera,
 
@@ -50600,7 +50605,7 @@ export {
     AlwaysStencilFunc as alwaysStencilFunc,
     AmbientLightProbe as ambientLightProbe,
     ArcCurve as arcCurve,
-    Audio as audio,
+    Audio as generalAudio,
     AudioAnalyser as audioAnalyser,
     AudioContext as audioContext,
     AudioListener as audioListener,
@@ -50763,6 +50768,7 @@ export {
 
 	animation,
 	attribute,
+    audio,
 	camera,
 	encoding,
 	factor,

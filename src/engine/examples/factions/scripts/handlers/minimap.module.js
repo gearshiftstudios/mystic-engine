@@ -65,6 +65,38 @@ class Handler_Minimap extends Program_Module {
                     resolve()
                 } )
             },
+            minimap: ( points ) => {
+                const cameraView = App.body.state( 'minimap-ui' )
+                    .qS( '#minimap' ).qS( 'vector-view' )
+                    .qS( '#minimap-vectors' ).qS( '#camera-view' )
+
+                const bounds = this.viewport.getBoundingClientRect()
+
+                const msw = handler_macromap.group.size.width,
+                    msh = handler_macromap.group.size.height,
+                    intx = bounds.width / msw,
+                    inty = bounds.height / msh,
+                    bx = -msw / 2,
+                    by = -msh / 2
+
+                const newPoints = new Array(
+                    { x: 0, y: 0, string: '' },
+                    { x: 0, y: 0, string: '' },
+                    { x: 0, y: 0, string: '' },
+                    { x: 0, y: 0, string: '' }
+                )
+                
+                points.forEach( ( p, ix ) => {
+                    if ( p.x < 0 || p.x > 0 ) newPoints[ ix ].x = ( ( msw / 2 ) + p.x ) * intx
+                    if ( p.x == 0 ) newPoints[ ix ].x = ( msw / 2 ) * intx
+                    if ( p.z < 0 || p.z > 0 ) newPoints[ ix ].y = ( ( msh / 2 ) + p.z ) * inty
+                    if ( p.z == 0 ) newPoints[ ix ].y = ( msh / 2 ) * inty
+
+                    newPoints[ ix ].string = `${ newPoints[ ix ].x },${ newPoints[ ix ].y }`
+                } )
+
+                cameraView.setAttribute( 'points', `${ newPoints[ 0 ].string } ${ newPoints[ 1 ].string } ${ newPoints[ 3 ].string } ${ newPoints[ 2 ].string }` )
+            },
         }
     }
 

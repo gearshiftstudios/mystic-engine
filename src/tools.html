@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>	
+	<head>
+		<meta charset="UTF-8">
+		<title>Mystic Engine v0.1.0</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+
+		<link rel="stylesheet" href="tools/styles/html.min.css">
+		<link rel="stylesheet" href="tools/styles/environment.min.css">
+		<link rel="stylesheet" href="tools/styles/group.min.css">
+		<link rel="stylesheet" href="tools/styles/quickbar.min.css">
+		<link rel="stylesheet" href="tools/styles/renderer.min.css">
+		<link rel="stylesheet" href="tools/styles/tab.min.css">
+
+		<!-- import socket.io client -->
+		<!-- <script id='socket.io-script' src='socket.io/socket.io.js'></script>
+		<script>
+			window.socket = io( 'http://localhost:1516' )
+		</script>
+	
+		<script id='game-scripts-socket' src='tools/scripts/modules/socket.module.js' type='module'></script> -->
+
+		<script src='tools/scripts/modules/program.module.js' type='module'></script>
+	</head>
+
+	<body>
+		<quickbar>
+			<logo></logo>
+
+			<buttons>
+				<button menu='file'>File</button>
+				<button menu='edit'>Edit</button>
+				<button menu='test'>Test</button>
+				<button menu='export'>Export</button>
+			</buttons>
+
+			<quickmenu id='file'>
+				<item>New</item>
+				<item>Open</item>
+				<item>Save</item>
+				<item>Save As</item>
+				<item>Import Model</item>
+				<item>Import Model Pack</item>
+			</quickmenu>
+			<quickmenu id='edit'></quickmenu>
+			<quickmenu id='test'></quickmenu>
+			<quickmenu id='export'></quickmenu>
+		</quickbar>
+		
+		<environment>
+			<!-- 
+				neighbor attributes
+
+				nb ~ bottom neighbor
+				nl ~ left neighbor
+				nr ~ right neighbor
+				nt ~ top neighbor
+			 -->
+
+			<group show id='scene-view' width='5/6' height='4/5' nb='dev' show nr='scene-tools'>
+				<tab show id='child-view' width='1/2' height='full' group='scene-view' nr='main-view' subw subh>
+					<header>Child Scene</header>
+					<renderer></renderer>
+					<renderer-info>WebGL 2<br>Three JS r134<br>M3D v2.0 (Modified Three JS)</renderer-info>
+					<renderer-memory>Renderer Memory</renderer-memory>
+					<renderer-data>Renderer Data</renderer-data>
+					<renderer-fps>Renderer FPS</renderer-fps>
+				</tab>
+				<tab show id='main-view' width='1/2' height='full' group='scene-view' nl='child-view' subw subh>
+					<header>Main Scene</header>
+					<renderer></renderer>
+					<renderer-info>WebGL 2<br>Three JS r134<br>M3D v2.0 (Modified Three JS)</renderer-info>
+					<renderer-memory>Renderer Memory</renderer-memory>
+					<renderer-data>Renderer Data</renderer-data>
+					<renderer-fps>Renderer FPS</renderer-fps>
+				</tab>	
+			</group>
+
+			<group show id='scene-tools' width='1/6' height='full' nl='scene-view'>
+				<tab show id='children' width='full' height='1/2' group='scene-tools' nb='child-properties'>
+					<header>Scene Children</header>
+					<scrollbox leaflets>
+					</scrollbox>
+				</tab>
+				<tab show id='child-properties' width='full' height='1/2' group='scene-tools' nt='children'>
+					<header>Child Properties</header>
+				</tab>	
+			</group>
+
+			<group show id='dev' width='5/6' height='1/5' nr='scene-tools' nt='scene-view'>
+				<tab show id='terminal' width='full' height='full' group='dev' subw>
+					<header>Terminal</header>
+				</tab>	
+			</group>
+		</environment>
+	</body>
+</html>

@@ -22,11 +22,31 @@ interface-rb#minimap {
 		margin: 0vh 1vh 1vh 0vh;
 
         background-color: rgba( 0, 0, 0, 0.7 );
-        border: $univ-border-grey;
         border-radius: 0.5vh;
         box-shadow: 0 0 1vh black;
 		overflow: hidden;
 
         cursor: url( '../assets/cursors/pointer.discover.png' ), auto;
+    }
+
+    & vector-view {
+        position: absolute;
+		right: 0;
+		bottom: 0;
+
+        width: 25vh;
+		height: 25vh;
+
+        margin: 0vh 1.5vh 1.5vh 0vh;
+
+        pointer-events: none;
+
+        z-index: 99;
+    }
+
+    &[ wood-metal ] {
+        & view {
+            border: 0.5vh rgb( 180, 180, 180 ) ridge;
+        }
     }
 }

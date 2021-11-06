@@ -1,17 +1,22 @@
 onmessage = e => {
     const classes = {
         tile: class {
-            constructor ( face1, face2, vertices, center, biome, isCliff, isCoast ) {
+            constructor ( face1, face2, vertices, center, biome, isCliff, isCoast, chunkIndex, chunkTileIndex, row, column ) {
+                this.adjacencies = new Array()
                 this.a = face1
                 this.b = face2
                 this.biome = biome
                 this.center = center // [ x, z, y ]
+                this.chunkIndex = chunkIndex
+                this.chunkTileIndex = chunkTileIndex
+                this.column = column
                 this.faces = [ face1, face2 ]
-                this.vertices = vertices
                 this.hasTree = Math.random() >= biomes[ biome ][ 1 ]
                 this.isCliff = isCliff
                 this.isCoast = isCoast
+                this.row = row
                 this.settlementId = null
+                this.vertices = vertices
             }
         }
     }
@@ -27,6 +32,8 @@ onmessage = e => {
 
     chunkFaces.forEach( ( cf, ixcf ) => {
         const tiles = new Array()
+
+        let tile = 0
 
         cf.forEach( ( f, ix ) => {     
             if ( ix % 2 == 0 ) {
@@ -91,6 +98,9 @@ onmessage = e => {
                 )
                 
                 if ( !crust ) {
+                    cf[ ix ].tile = tile
+                    cf[ ix + 1 ].tile = tile
+
                     tiles.push( new classes.tile( 
                         face.a[ 0 ], 
                         face.b[ 0 ],
@@ -105,6 +115,8 @@ onmessage = e => {
                         cliff,
                         coast
                     ) )
+
+                    tile++
                 }
             }
         } )
@@ -112,21 +124,30 @@ onmessage = e => {
         chunkTiles.push( tiles )
     } )
 
-    let ix = 0
+    let ix = 0, allTileIndex = 0, iRow = -chunkSize, iColumn = -chunkSize
 
-    const allTiles = new Array()
+    const allTiles = new Array(),
+        chunkFacesRelTiles = new Array()
 
     for ( 
         let h = -( ( mapHeight / 2 ) - ( chunkSize / 2 ) ); 
         h < mapHeight / 2; 
         h += chunkSize
     ) {
+        iColumn = -chunkSize
+
+        iRow += chunkSize
+
         for ( 
             let w = -( ( mapWidth / 2 ) - ( chunkSize / 2 ) ); 
             w < mapWidth / 2; 
             w += chunkSize
         ) {
-            chunkTiles[ ix ].forEach( t => {
+            iColumn += chunkSize
+
+            let row = 1, column = 1
+
+            chunkTiles[ ix ].forEach( ( t, tix ) => {
                 const cx = w + t.center[ 0 ],
                     cy = h + t.center[ 1 ]
 
@@ -137,13 +158,61 @@ onmessage = e => {
                     new Array( cx, cy, t.center[ 2 ] ), 
                     t.biome,
                     t.isCliff,
-                    t.isCoast
+                    t.isCoast,
+                    ix,
+                    tix,
+                    iRow + row,
+                    iColumn + column
                 ) )
+
+                allTileIndex++
+                column++
+
+                if ( column > chunkSize ) {
+                    column = 1
+
+                    row++
+                }
             } )
 
             ix++
         }
     }
 
-    postMessage( [ chunkTiles, allTiles ] )
+    const allTilesByRow = {}
+    const allTiles1D = new Array()
+
+    let vRow = 1, vColumn = 1
+
+    allTiles.forEach( ( t, tix ) => {
+        if ( !allTilesByRow[ t.row ] ) allTilesByRow[ t.row ] = new Array()
+
+        allTilesByRow[ t.row ].push( t )
+    } )
+
+    for ( const r in allTilesByRow ) {
+        allTilesByRow[ r ].forEach( t => allTiles1D.push( t ) )
+    }
+
+    allTiles1D.forEach( ( t, tix ) => {
+        const adjacencies = new Array()
+
+        chunkFaces[ t.chunkIndex ][ t.a ].univTile = tix
+        chunkFaces[ t.chunkIndex ][ t.b ].univTile = tix
+                
+        if ( t.row != 1 && t.column != 1 ) adjacencies.push( tix - ( mapWidth + 1 ) )
+        if ( t.row != 1 ) adjacencies.push( tix - mapWidth )
+        if ( t.row != 1 && t.column != mapWidth ) adjacencies.push( tix - ( mapWidth - 1 ) )
+        if ( t.column != mapWidth ) adjacencies.push( tix + 1 )
+        if ( t.row != mapHeight && t.column != mapWidth ) adjacencies.push( tix + ( mapWidth + 1 ) )
+        if ( t.row != mapHeight ) adjacencies.push( tix + mapWidth )
+        if ( t.row != mapHeight && t.column != 1 ) adjacencies.push( tix + ( mapWidth - 1 ) )
+        if ( t.column != 1 ) adjacencies.push( tix - 1 )
+
+        t.adjacencies = adjacencies
+    } )
+
+    console.log( allTiles1D )
+
+    postMessage( [ chunkTiles, allTiles1D, chunkFacesRelTiles, chunkFaces ] )
 }

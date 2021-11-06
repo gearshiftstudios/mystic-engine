@@ -3,7 +3,7 @@
   "productName": "Development Tools (Mystic Engine v0.1.0)",
   "version": "0.1.0",
   "description": "My Electron application description",
-  "main": "src/dev-tools.js",
+  "main": "src/tools.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",

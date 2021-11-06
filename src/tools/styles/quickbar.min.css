@@ -1,0 +1,123 @@
+@font-face {
+  font-family: 'universal';
+  src: url("../../assets/fonts/bmonofont-i18n.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'droid';
+  src: url("../../assets/fonts/droidsans.ttf") format("truetype");
+}
+
+quickbar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 30px;
+  margin: 0;
+  background-color: #212121;
+  z-index: 11;
+}
+
+quickbar buttons {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc( 100% - 34px);
+  height: 100%;
+  margin: 0px 0px 0px 34px;
+}
+
+quickbar buttons button {
+  margin-top: 5px;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  border: solid 0px transparent;
+  border-radius: 5px;
+  color: white;
+  font-family: 'droid';
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 2.5px 7.5px 4px 7.5px;
+}
+
+quickbar buttons button:hover {
+  background-color: turquoise;
+  border: solid 1px #237b72;
+  -webkit-box-shadow: inset 0 0 2.5px black;
+          box-shadow: inset 0 0 2.5px black;
+  padding: 1.5px 6.5px 4px 6.5px;
+  text-shadow: 0 0 10px black;
+  cursor: pointer;
+}
+
+quickbar quickmenu {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin-top: 30px;
+  background-color: #161616;
+  border-radius: 0px 0px 5px 5px;
+  display: none;
+  overflow: hidden;
+}
+
+quickbar quickmenu item {
+  width: 100%;
+  height: 20px;
+  color: white;
+  display: block;
+  font-family: 'universal';
+  font-size: 12px;
+  text-align: left;
+  text-shadow: 0 0 10px black;
+  padding: 2.5px 10px 2.5px 10px;
+  z-index: 11;
+}
+
+quickbar quickmenu item icon {
+  width: 20px;
+  height: 20px;
+  margin: 2.5px;
+  background-repeat: repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+quickbar quickmenu item icon[object] {
+  background-image: url("../../assets/icons/scene-tools.object.png");
+}
+
+quickbar quickmenu item span {
+  padding: 0;
+  margin: 0;
+  color: white;
+  display: inline-block;
+  font-family: 'universal';
+  font-size: 12px;
+  text-align: left;
+  text-shadow: 0 0 10px black;
+}
+
+quickbar quickmenu item:hover {
+  background-color: turquoise;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+quickbar logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  margin: 5px 0px 0px 10px;
+  background-image: url("../../assets/logos/mystic.studios.quickbar.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+/*# sourceMappingURL=quickbar.min.css.map */

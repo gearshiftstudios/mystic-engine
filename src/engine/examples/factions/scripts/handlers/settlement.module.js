@@ -5,6 +5,11 @@ import * as animator from '../../../../scripts/libs/gsap/gsap.module.js'
 import { Program_Module } from '../module.module.js'
 
 import * as handler_map from './macromap.module.js'
+import * as m3d_loader_gltf from '../../../../scripts/m3d/loaders/gltfe.module.js'
+
+const loaders = {
+    gltf: new m3d_loader_gltf.eLoader()
+}
 
 class Settlement {
     constructor ( tile ) {
@@ -117,10 +122,12 @@ class Settlement {
     } 
 
     /* initialization */
-    generate () {
+    generate ( x = 0, y = 5, z = 0 ) {
         return new Promise( resolve => {
-            this.calculateInitTiles().then( () => {
+            loaders.gltf.load( './models/buildings/settlements/macromap/walls/palisade.glb', model => {
+                model.scene.position.set( x, y, z )
 
+                program.macromap.add( model.scene )
             } )
         } )
     }
@@ -129,6 +136,26 @@ class Settlement {
 class Handler_Settlement extends Program_Module {
     constructor ( category = 'Settlement Handler' ) {
         super( category )
+    }
+
+    generateTest ( x = 0, y = 5, z = 0 ) {
+        return new Promise( resolve => {
+            loaders.gltf.load( './models/buildings/settlements/macromap/walls/palisade.glb', model => {
+                model.scene.traverse( ( child ) => {
+                    if ( child.isMesh ) {
+                        child.castShadow = true
+                        // child.receiveShadow = true
+                        child.geometry.computeVertexNormals()
+                    }
+                } )
+
+                model.scene.position.set( x, y, z )
+
+                program.macromap.add( model.scene )
+
+                resolve()
+            } )
+        } )
     }
 }
 

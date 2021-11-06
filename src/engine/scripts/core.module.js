@@ -120,6 +120,42 @@ function init () {
             }
         }
 
+        Element.prototype.group = function ( id ) {
+            if ( id ) {
+                const groups = this.qSA( 'group' )
+
+                let found = null
+
+                for ( let i = 0; i < groups.length; i++ ) {
+                    if ( groups[ i ].id == id ) {
+                        found = groups[ i ]
+
+                        break
+                    }
+                }
+
+                return found
+            }
+        }
+
+        Element.prototype.tab = function ( id ) {
+            if ( id ) {
+                const tabs = this.qSA( 'tab' )
+
+                let found = null
+
+                for ( let i = 0; i < tabs.length; i++ ) {
+                    if ( tabs[ i ].id == id ) {
+                        found = tabs[ i ]
+
+                        break
+                    }
+                }
+
+                return found
+            }
+        }
+
         Element.prototype.state = function ( id ) {
             if ( id ) {
                 const states = this.qSA( 'state' )

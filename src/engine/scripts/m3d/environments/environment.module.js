@@ -2,6 +2,7 @@
 import * as reps from '../../mystic.module.js'
 
 /* import M3D */ 
+import * as m3d_renderer_css from '../renderers/css2d.module.js'
 import * as m3d_controls from '../controls/orbit.module.js'
 
 class Environment {
@@ -46,10 +47,10 @@ class Environment {
         this.scene = !options ? new reps.m3d.scene() : !options.scene ? new reps.m3d.scene() : options.scene.isScene ? options.scene : new reps.m3d.scene()
 
         this.renderers = {
+            css2d: new m3d_renderer_css.renderer(),
             webgl: new reps.m3d.renderer.webgl( { 
                 // alpha: true,
-                antialias: !options ? defaults.renderers.webgl.antialias : !options.rendererAntialias ? defaults.renderers.webgl.antialias : 
-                    typeof options.rendererAntialias == 'boolean' ? options.rendererAntialias : defaults.renderers.webgl.antialias,
+                antialias: true
             } ),
         }
 
@@ -65,6 +66,13 @@ class Environment {
 
         this.container.appendChild( this.renderers.webgl.domElement )
 
+        this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
+		this.renderers.css2d.domElement.style.position = 'absolute'
+		this.renderers.css2d.domElement.style.top = '0px'
+        this.renderers.css2d.domElement.style.pointerEvents = 'none'
+
+        this.container.appendChild( this.renderers.css2d.domElement )
+
         this.controls = !options ? defaults.controls : !options.controls ? defaults.controls  : options.controls.isControls ? options.controls : defaults.controls 
         this.controls.shouldUpdate = true
         this.controls.enableDamping = true
@@ -76,7 +84,7 @@ class Environment {
         this.controls.maxDistance = 300
         this.controls.enablePan = true
 
-        this.camera.position.set( 0, 32, 21 ) // ortho - 225.38, 281.34, 288.30
+        this.camera.position.set( 21, 32, -21 ) // ortho - 225.38, 281.34, 288.30
         // this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
         // this.camera.zoom = 1.8506178062217096 // perspective - don't alter
         this.camera.updateMatrixWorld()
@@ -95,7 +103,7 @@ class Environment {
 
         /* add sun light */ 
         this.lights.sun = new reps.m3d.light.directional( 0xffffff, 1 ) // create the sun light
-        this.lights.sun.position.set( -250, 250, 250 ) // change position of sun light
+        this.lights.sun.position.set( 250, 250, -250 ) // change position of sun light
 
         /* modify the sun light's shadow properties */ 
         this.lights.sun.castShadow = true // allow sun light to cast a shadow
@@ -107,8 +115,9 @@ class Environment {
         this.lights.sun.shadow.camera.top = 500
         this.lights.sun.shadow.camera.bottom = -500
         
-        this.lights.sun.shadow.mapSize.width = 50000
-        this.lights.sun.shadow.mapSize.height = 50000
+        this.lights.sun.shadow.mapSize.width = 100000
+        this.lights.sun.shadow.mapSize.height = 100000
+        this.lights.sun.shadowBias = 0.1
 
         this.scene.add( this.lights.sun ) // add sun light to the scene
 
@@ -126,6 +135,7 @@ class Environment {
 
     render () {
         if ( this.container.isShowing == true ) {
+            this.renderers.css2d.render( this.scene, this.camera )
             this.renderers.webgl.render( this.scene, this.camera )
 
             if ( this.controls.shouldUpdate ) this.controls.update()
@@ -134,16 +144,19 @@ class Environment {
 
     resize () {
         return new Promise( resolve => {
+            this.renderers.css2d.setPixelRatio( window.devicePixelRatio )
             this.renderers.webgl.setPixelRatio( window.devicePixelRatio )
 
             switch ( this.alwaysResize ) {
                 case false:
                     if ( this.container.isShowing == true ) {
+                        this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
                         this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     }
     
                     break
                 case true:
+                    this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
                     break
             }

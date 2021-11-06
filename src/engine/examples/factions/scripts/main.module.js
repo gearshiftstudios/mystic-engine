@@ -7,10 +7,12 @@ import * as stats from '../../../scripts/libs/stats.module.js'
 import * as cursors from './interface/cursors.module.js'
 import * as listeners from './interface/listeners.module.js'
 
+import * as handler_buildings from './handlers/buildings.module.js'
 import * as handler_nations from './handlers/nations.module.js'
 import * as handler_macromap from './handlers/macromap.module.js'
 import * as handler_maincamera from './handlers/maincamera.module.js'
 import * as handler_minimap from './handlers/minimap.module.js'
+import * as handler_pawn from './handlers/pawn.module.js'
 import * as handler_settlement from './handlers/settlement.module.js'
 
 /* Create program class */ 
@@ -20,13 +22,36 @@ class Program extends EProg {
 
         /* Create Macro Map group */ 
         this.macromap = handler_macromap.group
+        this.onlineMatch = false
+
+        this.temp = {
+            mixer: null,
+            clock: new engine.m3d.clock()
+        }
 
         /* Add all handlers */ 
+        this.addHandler( 'buildings', handler_buildings.rep )
         this.addHandler( 'nations', handler_nations.rep )
         this.addHandler( 'macromap', handler_macromap.rep )
         this.addHandler( 'maincamera', handler_maincamera.rep )
         this.addHandler( 'minimap', handler_minimap.rep )
-        this.addHandler( 'settlement', handler_settlement.rep )
+        this.addHandler( 'pawn', handler_pawn.rep )
+        this.addHandler( 'settlements', handler_settlement.rep )
+
+        this.addMode( 'macrobuild' ).addSubset(
+            [ 'single', false ],
+            [ 'fort', false ],
+            [ 'settlement', false ]
+        )
+
+        this.addMode( 'microbuild' ).addSubset(
+            [ '1x1', false ],
+            [ '3x3', false ],
+            [ '5x5', false ],
+            [ '7x7', false ],
+            [ '9x9', false ],
+            [ '11x11', false ]
+        )
 
         this.addLoader( 'pre', document.getElementById( 'loader-pre' ) ).then( loader => {
             loader.add( 'Managing Cursors' )
@@ -38,24 +63,6 @@ class Program extends EProg {
         } )
 
         this.addLoader( 'macromap', document.getElementById( 'loader-macromap' ) ).then( loader => {
-            // loader.add( 'Discovering New Land' )
-            //     .add( 'Provoking Explorers' )
-            //     .add( 'Viewing Shorelines' )
-            //     .add( 'Thickening Fog' )
-            //     .add( 'Moving Mountains' )
-            //     .add( 'Mapping Erosion' )
-            //     .add( 'Surveying Land' )
-            //     .add( 'Coloring Terrain' )
-            //     .add( 'Analyzing Foliage' )
-            //     .add( 'Plotting Land' )
-            //     .add( 'Cartographing Geography' )
-            //     .add( 'Marking Flaura' )
-            //     .add( 'Charting Borders' )
-            //     .add( 'Analyzing Weather' )
-            //     .add( 'Publishing Cartography' )
-            //     .add( 'Printing Findings' )
-            //     .add( 'Reviewing with Crew' )
-
             loader.add( 'Discovering New Land' )
                 .add( 'Provoking Explorers' )
                 .add( 'Viewing Shorelines' )
@@ -95,6 +102,8 @@ class Program extends EProg {
         this.animate = () => {
             stats.element.begin()
 
+            var delta = this.temp.clock.getDelta()
+
             this.environments.main.render()
 
             /* Check if map has been fully generated */
@@ -102,11 +111,20 @@ class Program extends EProg {
                 this.macromap && 
                 this.macromap.initialized 
             ) {
+                if ( Object.keys( this.handlers.pawn.list ).length > 0 ) {
+                    for ( const p in this.handlers.pawn.list ) {
+                        this.handlers.pawn.list[ p ].animations.mixer.update( delta )
+                    }
+                }
+
                 /* Animate water if it exists & is turned on */
-                // if ( 
-                //     this.macromap.water && 
-                //     this.macromap.animateWater 
-                // ) this.macromap.water.geometry.attributes.position.needsUpdate = true
+                if ( 
+                    this.macromap.water && 
+                    this.macromap.animateWater 
+                ) {
+                    this.macromap.water[ 0 ].material.opacity = 0.7 + Math.sin(new Date().getTime() * .0025)
+                    this.macromap.water[ 1 ].material.opacity = 0.7 - Math.sin(new Date().getTime() * .0025)
+                }
                 
                 this.handlers.maincamera.updateCameraElev()
                 
@@ -117,16 +135,16 @@ class Program extends EProg {
                     this.domevents.window.mouse.inside.isOn()
                 ) {
                     if (
-                        this.mouse.x >= window.innerWidth - 15 ||
-                        this.mouse.x <= 15 ||
-                        this.mouse.y >= window.innerHeight - 15 ||
-                        this.mouse.y <= 15
+                        this.mouse.screen.x >= window.innerWidth - 15 ||
+                        this.mouse.screen.x <= 15 ||
+                        this.mouse.screen.y >= window.innerHeight - 15 ||
+                        this.mouse.screen.y <= 15
                     ) {
                         this.environments.main.controls.panLeft(
                             -1 * Math.cos(
                                 Math.atan2(
-                                    this.mouse.y - window.innerHeight / 2,
-                                    this.mouse.x - window.innerWidth / 2
+                                    this.mouse.screen.y - window.innerHeight / 2,
+                                    this.mouse.screen.x - window.innerWidth / 2
                                 )
                             )
                         )
@@ -134,8 +152,8 @@ class Program extends EProg {
                         this.environments.main.controls.panUp(
                             -1 * Math.sin(
                                 Math.atan2(
-                                    this.mouse.y - window.innerHeight / 2,
-                                    this.mouse.x - window.innerWidth / 2
+                                    this.mouse.screen.y - window.innerHeight / 2,
+                                    this.mouse.screen.x - window.innerWidth / 2
                                 )
                             )
                         )
@@ -172,9 +190,10 @@ class Program extends EProg {
         
                                 /* Initialize handlers */ 
                                 this.handlers.macromap.init().then( () => {
-                                    this.handlers.nations.init().then( () => {
-        
-                                        this.animate()
+                                    this.handlers.buildings.init().then( () => {
+                                        this.handlers.nations.init().then( () => {
+                                            this.animate()
+                                        } )
                                     } )
                                 } )
                             } )

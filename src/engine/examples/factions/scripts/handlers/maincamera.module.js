@@ -2,6 +2,7 @@ import * as engine from '../../../../scripts/mystic.module.js'
 import * as m3d from '../../../../scripts/m3d/rep.module.js'
 
 import { Program_Module } from '../module.module.js'
+import * as handler_minimap from './minimap.module.js'
 
 class Handler_MainCamera extends Program_Module {
     constructor ( category = 'Main Camera Handler' ) {
@@ -13,6 +14,7 @@ class Handler_MainCamera extends Program_Module {
         this.elevOffset = 15
         this.helper = null
         this.minElev = 0
+        this.minimapElement = null
         this.raycaster = null
 
         this.coords = [ 
@@ -29,10 +31,20 @@ class Handler_MainCamera extends Program_Module {
                 new engine.m3d.vec3()
             ) 
         ]
+
+        this.mouse = {
+            coords: {
+                screen: new engine.m3d.vec2(),
+            },
+        }
     }
 
     updateCameraElev () {
         const camera = program.environments.main.camera
+        
+        this.minimapElement = App.body.state( 'minimap-ui' )
+            .qS( '#minimap' ).qS( 'vector-view' )
+            .qS( '#minimap-vectors' )
 
         /* lt */
         this.coords[ 0 ][ 0 ].x = ( 0 / window.innerWidth ) * 2 - 1
@@ -56,7 +68,7 @@ class Handler_MainCamera extends Program_Module {
         this.coords[ 0 ].forEach( ( c, ix ) => {
             this.raycaster.setFromCamera( c, camera )
 
-            let intersections = this.raycaster.intersectObject( program.macromap, true )
+            let intersections = this.raycaster.intersectObjects( [ program.macromap.background.paper, program.macromap.chunkMeshes ], true )
 
             if ( intersections.length > 0 ) {
                 this.coords[ 1 ][ ix ] = new engine.m3d.vec3(
@@ -67,21 +79,23 @@ class Handler_MainCamera extends Program_Module {
             }
         } )
 
-        this.raycaster = new engine.m3d.ray.caster( camera.position.clone(), this.castDirection )
-        this.raycaster.firstHitOnly = true
+        handler_minimap.rep.update.minimap( this.coords[ 1 ] )
 
-        this.castFrom.copy( camera.position )
-        this.castFrom.y += 1000
+        // this.raycaster = new engine.m3d.ray.caster( camera.position.clone(), this.castDirection )
+        // this.raycaster.firstHitOnly = true
 
-        this.raycaster.set( this.castFrom, this.castDirection )
+        // this.castFrom.copy( camera.position )
+        // this.castFrom.y += 1000
 
-        let intersections = this.raycaster.intersectObject( program.macromap, true )
+        // this.raycaster.set( this.castFrom, this.castDirection )
 
-        if ( intersections.length > 0 ) {
-            this.minElev = intersections[ 0 ].point.y + this.elevOffset
+        // let intersections = this.raycaster.intersectObject( program.macromap.chunkMeshes, true )
 
-            if ( camera.position.y <= this.minElev ) camera.position.y = this.minElev
-        }
+        // if ( intersections.length > 0 ) {
+        //     this.minElev = intersections[ 0 ].point.y + this.elevOffset
+
+        //     if ( camera.position.y <= this.minElev ) camera.position.y = this.minElev
+        // }
     }
 
     init () {

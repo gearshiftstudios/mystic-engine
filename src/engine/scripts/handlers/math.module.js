@@ -14,6 +14,16 @@ class Hanlder_Math extends Handler {
             else return true
         }
 
+        this.string = {
+            capitalize: ( string ) => {
+                return {
+                    first: () => {
+                        return string.charAt( 0 ).toUpperCase() + string.slice( 1 )
+                    },
+                }
+            }
+        }
+
         this.random = {
             number: {
                 between: ( min, max, floor ) => {

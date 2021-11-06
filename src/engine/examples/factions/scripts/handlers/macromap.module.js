@@ -7,6 +7,8 @@ import { Program_Module } from '../module.module.js'
 
 import * as handler_minimap from './minimap.module.js'
 
+window.dummy = new engine.m3d.object3D()
+
 class Map extends engine.m3d.object3D {
     constructor ( width, height, elevMax, mult ) {
         super()
@@ -22,6 +24,12 @@ class Map extends engine.m3d.object3D {
         this.isMapGroup = true
         this.mult = mult
         this.type = 'Map'
+
+        this.waterDetails = {
+            uniforms: {
+
+            }
+        }
 
         this.elev = {
             max: elevMax,
@@ -57,7 +65,8 @@ class Map extends engine.m3d.object3D {
 }
 
 class Chunk {
-    constructor ( x, y, z, geometry, material ) {
+    constructor ( x, y, z, geometry, material, index ) {
+        this.index = index
         this.instances = {}
         this.mesh = new engine.m3d.mesh.default( geometry, material )
 
@@ -75,6 +84,26 @@ class Handler_Map extends Program_Module {
         
         this.fogVisible = false
         this.trees = {}
+
+        this.chunks = {
+            hovered: new Array(),
+            selected: new Array(),
+
+            point: {
+                hovered: new Array(),
+                selected: new Array(),
+            },
+        }
+
+        this.tiles = {
+            hovered: new Array(),
+            selected: new Array(),
+
+            point: {
+                hovered: new Array(),
+                selected: new Array(),
+            },
+        }
 
         this.biomes = [
             [ 'tundra', 0.99, 0.99 ],
@@ -96,10 +125,11 @@ class Handler_Map extends Program_Module {
             },
             elev: {
                 max: 16,
+                water: 0.3,
             },
             size: {
-                width: 500,
-                height: 500,
+                width: 200,
+                height: 200,
             },
             chunk: {
                 amount: [ 0, 0 ],
@@ -304,18 +334,415 @@ class Handler_Map extends Program_Module {
         }
     }
 
-    /* new */ 
+    colorTile ( chunkIndex, tileIndex, color ) {
+        if ( chunkIndex ) {
+            if ( tileIndex ) {
+                const chunk = MAPGROUP.chunks[ chunkIndex ],
+                    tile = MAPGROUP.chunks[ chunkIndex ].tiles[ tileIndex ]
 
+                const colorXYZ = chunk.mesh.geometry.getAttribute( 'color' ),
+
+                    colors = new Array(
+                        new engine.m3d.color( color ? color : chunk.faces[ tile.a ].terrainColor ),
+                        new engine.m3d.color( color ? color : chunk.faces[ tile.b ].terrainColor )
+                    )
+
+                colorXYZ.setXYZ( chunk.faces[ tile.a ].vertices.nonIndexed[ 0 ], colors[ 0 ].r, colors[ 0 ].g, colors[ 0 ].b )
+                colorXYZ.setXYZ( chunk.faces[ tile.a ].vertices.nonIndexed[ 1 ], colors[ 0 ].r, colors[ 0 ].g, colors[ 0 ].b )
+                colorXYZ.setXYZ( chunk.faces[ tile.a ].vertices.nonIndexed[ 2 ], colors[ 0 ].r, colors[ 0 ].g, colors[ 0 ].b )
+
+                colorXYZ.setXYZ( chunk.faces[ tile.b ].vertices.nonIndexed[ 0 ], colors[ 1 ].r, colors[ 1 ].g, colors[ 1 ].b )
+                colorXYZ.setXYZ( chunk.faces[ tile.b ].vertices.nonIndexed[ 1 ], colors[ 1 ].r, colors[ 1 ].g, colors[ 1 ].b )
+                colorXYZ.setXYZ( chunk.faces[ tile.b ].vertices.nonIndexed[ 2 ], colors[ 1 ].r, colors[ 1 ].g, colors[ 1 ].b )
+
+                colorXYZ.needsUpdate = true
+            }
+        }
+    }
+
+    getTileHeightMax ( chunkIndex, tileIndex ) {
+        if ( chunkIndex ) {
+            if ( tileIndex ) {
+                const chunk = MAPGROUP.chunks[ chunkIndex ],
+                    tile = MAPGROUP.chunks[ chunkIndex ].tiles[ tileIndex ]
+
+                const verticesHeight = [
+                    MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                        .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ tile.vertices[ 0 ] ].indexes[ 2 ] ],
+                    MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                        .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ tile.vertices[ 1 ] ].indexes[ 2 ] ],
+                    MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                        .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ tile.vertices[ 2 ] ].indexes[ 2 ] ],
+                    MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                        .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ tile.vertices[ 3 ] ].indexes[ 2 ] ]
+                ]
+
+                return Math.max( ...verticesHeight )
+            }
+        }
+    }
+
+    setTileHeight ( chunkIndex, tileIndex, height, removeTree = false ) {
+        return new Promise( resolve => {
+            if ( chunkIndex ) {
+                if ( MAPGROUP.allTiles[ tileIndex ].chunkTileIndex && ( 
+                    MAPGROUP.allTiles[ tileIndex ].chunkTileIndex >= 0 && 
+                    MAPGROUP.allTiles[ tileIndex ].chunkTileIndex < MAPGROUP.chunks[ chunkIndex ].tiles.length 
+                ) ) {
+                    const chunk = MAPGROUP.chunks[ chunkIndex ],
+                        tile = MAPGROUP.chunks[ chunkIndex ].tiles[ MAPGROUP.allTiles[ tileIndex ].chunkTileIndex ],
+                        tileVerticesXY = new Array()
+    
+                    for ( let i = 0; i < chunk.faces[ tile.a ].vertices.nonIndexed.length; i++ ) {
+                        MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                            .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.a ].vertices.nonIndexed[ i ] ].indexes[ 2 ] ] = height
+    
+                        tileVerticesXY.push(
+                            `${ MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.a ].vertices.nonIndexed[ i ] ].indexes[ 0 ] ]
+                            }.${ MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.a ].vertices.nonIndexed[ i ] ].indexes[ 1 ] ] }`
+                        )
+    
+                        MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position.needsUpdate = true
+                    }
+    
+                    for ( let i = 0; i < chunk.faces[ tile.b ].vertices.nonIndexed.length; i++ ) {
+                        MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                            .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.b ].vertices.nonIndexed[ i ] ].indexes[ 2 ] ] = height
+    
+                        tileVerticesXY.push(
+                            `${ MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.b ].vertices.nonIndexed[ i ] ].indexes[ 0 ] ]
+                            }.${ MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ chunk.faces[ tile.b ].vertices.nonIndexed[ i ] ].indexes[ 1 ] ] }`
+                        )
+    
+                        MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position.needsUpdate = true
+                    }
+    
+                    if ( tile.treeInfo ) {
+                        dummy.castShadow = true
+                        dummy.receiveShadow = true
+    
+                        tile.treeInfo[ 4 ] = ( removeTree == true ) ? -20 : height
+    
+                        dummy.position.set( 
+                            tile.treeInfo[ 3 ],
+                            tile.treeInfo[ 4 ],
+                            tile.treeInfo[ 5 ]
+                        )
+    
+                        dummy.rotation.set( 
+                            tile.treeInfo[ 6 ],
+                            tile.treeInfo[ 7 ],
+                            tile.treeInfo[ 8 ]
+                        )
+    
+                        dummy.scale.set( 
+                            tile.treeInfo[ 9 ],
+                            tile.treeInfo[ 10 ],
+                            tile.treeInfo[ 11 ]
+                        )
+    
+                        dummy.updateMatrix()
+    
+                        MAPGROUP.instances.trees[ tile.treeInfo[ 0 ] ][ tile.treeInfo[ 1 ] ]
+                            .setMatrixAt( tile.treeInfo[ 2 ], dummy.matrix )
+    
+                        MAPGROUP.instances.trees[ tile.treeInfo[ 0 ] ][ tile.treeInfo[ 1 ] ]
+                            .instanceMatrix.needsUpdate = true
+                    }
+    
+                    for ( let i = 0; i < MAPGROUP.allTiles[ tileIndex ].adjacencies.length; i++ ) {
+                        const aChunkIndex = MAPGROUP.allTiles[ MAPGROUP.allTiles[ tileIndex ].adjacencies[ i ] ].chunkIndex,
+                            aChunk = MAPGROUP.chunks[ aChunkIndex ],
+                            aTile = MAPGROUP.chunks[ aChunkIndex ].tiles[ MAPGROUP.allTiles[ MAPGROUP.allTiles[ tileIndex ].adjacencies[ i ] ].chunkTileIndex ]
+    
+                        for ( let f = 0; f < aChunk.faces[ aTile.a ].vertices.nonIndexed.length; f++ ) {
+                            const stringed = `${ MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 0 ] ]
+                            }.${ MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 1 ] ] }` 
+
+                            tileVerticesXY.forEach( vxy => {
+                                if ( vxy == stringed ) {
+                                    MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                        .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                } else {
+                                    const newString = {
+                                        x: Number( stringed.split( '.' )[ 0 ] ),
+                                        y: Number( stringed.split( '.' )[ 1 ] ),
+                                    }
+
+                                    const newXY = {
+                                        x: Number( vxy.split( '.' )[ 0 ] ),
+                                        y: Number( vxy.split( '.' )[ 1 ] ),
+                                    }
+
+                                    if ( 
+                                        newString.x == -( this.settings.chunk.size / 2 ) && 
+                                        newXY.x == this.settings.chunk.size / 2  &&
+                                        newString.y == newXY.y
+                                    ) {
+                                        MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                            .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                    }
+
+                                    if ( 
+                                        newString.x == this.settings.chunk.size / 2 && 
+                                        newXY.x == -( this.settings.chunk.size / 2 ) &&
+                                        newString.y == newXY.y
+                                    ) {
+                                        MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                            .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                    }
+
+                                    if ( 
+                                        newString.y == -( this.settings.chunk.size / 2 ) && 
+                                        newXY.y == this.settings.chunk.size / 2  &&
+                                        newString.x == newXY.x
+                                    ) {
+                                        MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                            .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                    }
+
+                                    if ( 
+                                        newString.y == this.settings.chunk.size / 2 && 
+                                        newXY.y == -( this.settings.chunk.size / 2 ) &&
+                                        newString.x == newXY.x
+                                    ) {
+                                        MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                            .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.a ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                    }
+                                }
+                            } )
+    
+                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position.needsUpdate = true
+                        }
+    
+                        for ( let f = 0; f < aChunk.faces[ aTile.b ].vertices.nonIndexed.length; f++ ) {
+                            const stringed = `${ MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 0 ] ]
+                            }.${ MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 1 ] ] }`
+    
+                                tileVerticesXY.forEach( vxy => {
+                                    if ( vxy == stringed ) {
+                                        MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                            .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                    } else {
+                                        const newString = {
+                                            x: Number( stringed.split( '.' )[ 0 ] ),
+                                            y: Number( stringed.split( '.' )[ 1 ] ),
+                                        }
+    
+                                        const newXY = {
+                                            x: Number( vxy.split( '.' )[ 0 ] ),
+                                            y: Number( vxy.split( '.' )[ 1 ] ),
+                                        }
+    
+                                        if ( 
+                                            newString.x == -( this.settings.chunk.size / 2 ) && 
+                                            newXY.x == this.settings.chunk.size / 2  &&
+                                            newString.y == newXY.y
+                                        ) {
+                                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                        }
+    
+                                        if ( 
+                                            newString.x == this.settings.chunk.size / 2 && 
+                                            newXY.x == -( this.settings.chunk.size / 2 ) &&
+                                            newString.y == newXY.y
+                                        ) {
+                                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                        }
+    
+                                        if ( 
+                                            newString.y == -( this.settings.chunk.size / 2 ) && 
+                                            newXY.y == this.settings.chunk.size / 2  &&
+                                            newString.x == newXY.x
+                                        ) {
+                                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                        }
+    
+                                        if ( 
+                                            newString.y == this.settings.chunk.size / 2 && 
+                                            newXY.y == -( this.settings.chunk.size / 2 ) &&
+                                            newString.x == newXY.x
+                                        ) {
+                                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position
+                                                .array[ MAPGROUP.chunks[ aChunkIndex ].vertices.nonIndexed[ aChunk.faces[ aTile.b ].vertices.nonIndexed[ f ] ].indexes[ 2 ] ] = height
+                                        }
+                                    }
+                                } )
+    
+                            MAPGROUP.chunks[ aChunkIndex ].mesh.geometry.attributes.position.needsUpdate = true
+                        }
+
+                        this.updateTileColor( aChunkIndex, MAPGROUP.allTiles[ tileIndex ].adjacencies[ i ] )
+                    }
+
+                    resolve( [ chunkIndex, tileIndex ] )
+                }
+            }
+        } )
+    }
+
+    updateTileColor ( chunkIndex, tileIndex, buildMode = null ) {
+        return new Promise( resolve => {
+            const tile = MAPGROUP.allTiles[ tileIndex ]
+
+            const color = new engine.m3d.color(),
+                colorXYZ = MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.color
+
+            const searchZValues = face => {
+                const zValues = new Array()
+
+                MAPGROUP.chunks[ chunkIndex ].faces[ face ].vertices.nonIndexed.forEach( v => zValues.push( 
+                    MAPGROUP.chunks[ chunkIndex ].mesh.geometry.attributes.position
+                        .array[ MAPGROUP.chunks[ chunkIndex ].vertices.nonIndexed[ v ].indexes[ 2 ] ]
+                ) )
+
+                return zValues
+            }
+
+            const calcMaxHeight = face => {
+                const zValues = searchZValues( face )
+
+                return Math.max( ...zValues )
+            }
+
+            const calcMinHeight = face => {
+                const zValues = searchZValues( face )
+
+                return Math.min( ...zValues )
+            }
+            
+            const updateFace = ( face ) => {
+                console.log( face )
+
+                const min = calcMinHeight( face )
+                const max = calcMaxHeight( face )
+        
+                switch ( MAPGROUP.chunks[ chunkIndex ].faces[ face ].biome ) {
+                    case 0:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x8a9488
+                        break
+                    case 1:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x214010
+                        break
+                    case 2:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x174000
+                        break
+                    case 3:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x174000
+                        break
+                    case 4:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x102e00
+                        break
+                    case 5:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0xeecc44
+                        break
+                    case 6:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x4a4924
+                        break
+                    case 7:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x0d2600 // 0xd1a128 tree leaves
+                        break
+                    case 8:
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x0d2600
+                        break
+                }
+                        
+                /* assign colors based upon the elev of points within face */
+                if ( min >= MAPGROUP.elev.min - 0.3 && min < MAPGROUP.elev.min + 0.75 ) {
+                    if ( MAPGROUP.chunks[ chunkIndex ].faces[ face ].biome == 0 ) {
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x5c5c5c // cliff
+                    } else {
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].isCoast = true
+        
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0xb8a763 // shore
+                    }
+                }
+                        
+                if ( min == MAPGROUP.elev.min && max == MAPGROUP.elev.min ) {
+                    MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x255e6b
+                }
+
+                if ( max - min >= 1 ) {
+                    MAPGROUP.chunks[ chunkIndex ].faces[ face ].isCliff = true
+
+                    MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x3a3a3a
+                }
+    
+                if ( min < MAPGROUP.elev.min - 1 ) {
+                    MAPGROUP.chunks[ chunkIndex ].faces[ face ].isCrust = true
+    
+                    MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x452b01
+                }
+
+                if ( buildMode != null ) {
+                    switch ( buildMode ) {
+                        case 'settlement':
+                            MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x7a6615
+                            break
+                    }
+                }
+        
+                color.setHex( MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor )
+        
+                MAPGROUP.chunks[ chunkIndex ].faces[ face ].vertices.nonIndexed.forEach( v => {
+                    colorXYZ.setXYZ( v, color.r, color.g, color.b )
+                } )
+                
+                colorXYZ.needsUpdate = true
+            }
+
+            updateFace( tile.a )
+            updateFace( tile.b )
+
+            resolve()
+        } )
+    }
+
+    updateSelectedTiles ( height, buildMode ) {
+        return new Promise( resolve => {
+            this.tiles.selected.forEach( t => {
+                t = t.split( '.' )
+            
+                this.setTileHeight(
+                    Number( t[ 0 ] ),
+                    Number( t[ 1 ] ),
+                    height,
+                    true
+                ).then( data => {
+                    this.updateTileColor( data[ 0 ], data[ 1 ], buildMode )
+                } )
+            } )
+
+            handler_minimap.rep.update.pixels()
+
+            resolve()
+        } )
+    }
+
+    /* generation */ 
     generateMacro ( mult = 2 ) {
         return new Promise( resolve => {
             const finish = () => {
-                this.animateWater = true
+                // this.animateWater()
 
                 program.environments.main.controls.maxDistance = program.macromap.size.width / 1.667
     
                 handler_minimap.rep.update.pixels()
     
-                MAPGROUP.water.geometry.attributes.position.needsUpdate = true
+                MAPGROUP.water[ 0 ].geometry.attributes.position.needsUpdate = true
+                MAPGROUP.water[ 1 ].geometry.attributes.position.needsUpdate = true
+
                 MAPGROUP.animateWater = true
                 MAPGROUP.initialized = true
     
@@ -323,6 +750,8 @@ class Handler_Map extends Program_Module {
 
                 resolve()
             }
+
+            MAPGROUP.initialized = false
 
             program.loader( 'macromap' ).start()
 
@@ -930,20 +1359,23 @@ class Handler_Map extends Program_Module {
 
             if ( MAPGROUP.chunks != null && MAPGROUP.chunks.length > 0 ) {
                 for ( let i = 0; i < MAPGROUP.chunks.length; i++ ) {
-                    MAPGROUP.remove( MAPGROUP.chunks[ i ].mesh )
+                    MAPGROUP.chunkMeshes.remove( MAPGROUP.chunks[ i ].mesh )
                 }
 
                 MAPGROUP.chunks = new Array()
             }
 
-            if ( MAPGROUP.water != null ) {
-                MAPGROUP.remove( MAPGROUP.water )
-
-                MAPGROUP.water = null
-
-                if ( this.timelines.water != null ) {
-                    this.timelines.water.kill()
-                    this.timelines.water = null
+            if ( MAPGROUP.water ) {
+                if ( MAPGROUP.water[ 0 ] != null ) {
+                    MAPGROUP.remove( MAPGROUP.water[ 0 ] )
+    
+                    MAPGROUP.water[ 0 ] = null
+    
+                    if ( MAPGROUP.water[ 1 ] != null ) {
+                        MAPGROUP.remove( MAPGROUP.water[ 1 ] )
+        
+                        MAPGROUP.water[ 1 ] = null
+                    }
                 }
             }
 
@@ -969,6 +1401,11 @@ class Handler_Map extends Program_Module {
         return new Promise( resolve => {
             MAPGROUP.chunks = new Array()
             MAPGROUP.chunkGeometry = new Array()
+            MAPGROUP.chunkMeshes = new engine.m3d.group()
+            
+            MAPGROUP.add( MAPGROUP.chunkMeshes )
+
+            let ix = 0
 
             for ( 
                 let h = -( ( MAPGROUP.size.height / 2 ) - ( this.settings.chunk.size / 2 ) ); 
@@ -991,15 +1428,21 @@ class Handler_Map extends Program_Module {
                         new engine.m3d.mat.mesh.standard( {
                             flatShading: true,
                             vertexColors: true,
-                        } )
+                        } ),
+                        ix
                     )
                     
+                    // chunk.mesh.castShadow = true
+                    chunk.mesh.chunkIndex = ix
+                    chunk.mesh.receiveShadow = true
                     chunk.mesh.position.set( w, 0, h )
                     chunk.mesh.rotation.x = engine.m3d.util.math.degToRad( -90 )
 
-                    MAPGROUP.add( chunk.mesh )
+                    MAPGROUP.chunkMeshes.add( chunk.mesh )
                     MAPGROUP.chunkGeometry.push( chunk.mesh.geometry.attributes.position.array )
                     MAPGROUP.chunks.push( chunk )
+
+                    ix++
                 }
             }
 
@@ -1131,8 +1574,10 @@ class Handler_Map extends Program_Module {
                     const searchZValues = ( useIndexed ) => {
                         const zValues = new Array()
         
-                        if ( useIndexed ) f.vertices.indexed.forEach( v => zValues.push( c.vertices.indexed[ v ].position[ 2 ] ) )
-                        else f.vertices.nonIndexed.forEach( v => zValues.push( c.vertices.nonIndexed[ v ].position[ 2 ] ) )
+                        if ( useIndexed ) f.vertices.indexed.forEach( v => zValues.push( c.vertices.indexed[ v ].indexes[ 2 ] ) )
+                        else f.vertices.nonIndexed.forEach( v => zValues.push( 
+                            c.mesh.geometry.attributes.position.array[ c.vertices.nonIndexed[ v ].indexes[ 2 ] ]
+                        ) )
 
                         return zValues
                     }
@@ -1205,8 +1650,6 @@ class Handler_Map extends Program_Module {
                     /* assign colors based upon the elev of points within face */
                     if ( min >= MAPGROUP.elev.min - 0.3 && min < MAPGROUP.elev.min + 0.75 ) {
                         if ( f.biome == 0 ) {
-                            f.isCliff = true
-        
                             f.terrainColor = 0x5c5c5c // cliff
                         } else {
                             f.isCoast = true
@@ -1214,15 +1657,15 @@ class Handler_Map extends Program_Module {
                             f.terrainColor = 0xb8a763 // shore
                         }
                     }
-        
-                    if ( max >= MAPGROUP.elev.min + 7.5 && min < MAPGROUP.elev.min + 7.5 ) {
-                        f.isCliff = true
-        
-                        f.terrainColor = 0x452b01 // mesa-side
-                    }
                         
                     if ( min == MAPGROUP.elev.min && max == MAPGROUP.elev.min ) {
-                        f.terrainColor = 0xb8a763
+                        f.terrainColor = 0x255e6b
+                    }
+
+                    if ( max - min >= 1 ) {
+                        f.isCliff = true
+
+                        f.terrainColor = 0x3a3a3a
                     }
     
                     if ( min < MAPGROUP.elev.min - 1 ) {
@@ -1270,6 +1713,12 @@ class Handler_Map extends Program_Module {
                 } )
 
                 MAPGROUP.allTiles = e.data[ 1 ]
+                MAPGROUP.chunkFacesRelTiles = e.data[ 2 ]
+                MAPGROUP.chunkFaces = e.data[ 3 ]
+
+                MAPGROUP.chunkFaces.forEach( ( cf, ix ) => {
+                    MAPGROUP.chunks[ ix ].faces = cf
+                } )
 
                 resolve()
             }
@@ -1310,8 +1759,6 @@ class Handler_Map extends Program_Module {
     generateChunkTreeInstances () {
         return new Promise ( resolve => {
             MAPGROUP.instances.trees = {}
-
-            const dummy = new engine.m3d.object3D()
 
             for ( const b in this.trees ) {
                 for ( const h in this.trees[ b ] ) {
@@ -1372,6 +1819,23 @@ class Handler_Map extends Program_Module {
 
                         MAPGROUP.instances.trees[ b ][ h ].setMatrixAt( ix, dummy.matrix )
 
+                        MAPGROUP.chunks[ MAPGROUP.allTiles[ t ].chunkIndex ]
+                            .tiles[ MAPGROUP.allTiles[ t ].chunkTileIndex ]
+                            .treeInfo = new Array( 
+                                b, 
+                                h, 
+                                ix, 
+                                dummy.position.x, 
+                                dummy.position.y,
+                                dummy.position.z,
+                                dummy.rotation.x, 
+                                dummy.rotation.y,
+                                dummy.rotation.z,
+                                dummy.scale.x, 
+                                dummy.scale.y,
+                                dummy.scale.z
+                            )
+
                         MAPGROUP.instances.trees[ b ][ h ].instanceMatrix.needsUpdate = true
                     } )
 
@@ -1424,39 +1888,56 @@ class Handler_Map extends Program_Module {
                 new engine.m3d.geometry.buffer.plane( 
                     MAPGROUP.size.width,
                     MAPGROUP.size.width,
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width
+                    MAPGROUP.size.width * 2,
+                    MAPGROUP.size.width * 2
                 ),
                 new engine.m3d.geometry.buffer.plane( 
                     MAPGROUP.size.width,
                     MAPGROUP.size.width,
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width
+                    MAPGROUP.size.width * 2,
+                    MAPGROUP.size.width * 2
                 ),
             ]
 
-            MAPGROUP.water = new engine.m3d.mesh.default(
-                MAPGROUP.waterGeo[ 0 ],
-                new engine.m3d.mat.mesh.phong( { 
-                    color: 0x08302f,
-                    flatShading: true, 
-                    opacity: 0.7,
-                    transparent: true,
-                } )
-            )
+            MAPGROUP.water = [
+                new engine.m3d.mesh.default(
+                    MAPGROUP.waterGeo[ 0 ],
+                    new engine.m3d.mat.mesh.phong( { 
+                        color: 0x255e6b,
+                        flatShading: true, 
+                        opacity: 0.7,
+                        transparent: true,
+                    } )
+                ),
+                new engine.m3d.mesh.default(
+                    MAPGROUP.waterGeo[ 1 ],
+                    new engine.m3d.mat.mesh.phong( { 
+                        color: 0x255e6b,
+                        flatShading: true, 
+                        opacity: 0.7,
+                        transparent: true,
+                    } )
+                )
+            ]
 
-            MAPGROUP.water.initPositions = []
-            MAPGROUP.water.receiveShadow = true
-            MAPGROUP.water.rotation.x = engine.m3d.util.math.degToRad( -90 )
-            MAPGROUP.water.position.y = 0.15
+            MAPGROUP.water[ 0 ].initPositions = []
+            MAPGROUP.water[ 0 ].receiveShadow = true
+            MAPGROUP.water[ 0 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
+            MAPGROUP.water[ 0 ].position.y = 0.15
 
-            MAPGROUP.add( MAPGROUP.water )
+            MAPGROUP.water[ 1 ].initPositions = []
+            MAPGROUP.water[ 1 ].receiveShadow = true
+            MAPGROUP.water[ 1 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
+            MAPGROUP.water[ 1 ].position.y = 0.25
+
+            MAPGROUP.add( MAPGROUP.water[ 0 ] )
+            MAPGROUP.add( MAPGROUP.water[ 1 ] )
 
             worker.postMessage( [ 
                 MAPGROUP.waterGeo[ 0 ].attributes.position.array,
                 MAPGROUP.waterGeo[ 1 ].attributes.position.array,
-                MAPGROUP.size.width + 1,
-                MAPGROUP.size.height + 1
+                MAPGROUP.size.width,
+                MAPGROUP.size.height
             ] )
 
             worker.onmessage = e => {
@@ -1474,15 +1955,17 @@ class Handler_Map extends Program_Module {
 
             this.loadTreeLOD( 'tundra.tall.darkgreen' ).then( () => {
                 this.loadTreeLOD( 'taiga.tall.darkgreen' ).then( () => {
-                    this.loadTreeLOD( 'temp-decid.tall.darkgreen' ).then( () => {
-                        this.loadTreeLOD( 'temp-decid.moderate.darkgreen' ).then( () => {
-                            this.loadTreeLOD( 'sub-trop-desert.average.deepgreen' ).then( () => {
-                                this.loadTreeLOD( 'temp-decid.average.darkgreen' ).then( () => {
-                                    this.loadTreeLOD( 'trop-seasonal.average.deepgreen' ).then( () => {
-                                        this.loadTreeLOD( 'trop-seasonal.average.lightgreen' ).then( () => {
-                                            this.loadTreeLOD( 'trop-rain.average.deepgreen' ).then( () => {
-                                                this.loadTreeLOD( 'trop-rain.average.lightgreen' ).then( () => {
-                                                    resolve()
+                    this.loadTreeLOD( 'temp-grass.tall.darkgreen' ).then( () => {
+                        this.loadTreeLOD( 'temp-decid.tall.darkgreen' ).then( () => {
+                            this.loadTreeLOD( 'temp-decid.moderate.darkgreen' ).then( () => {
+                                this.loadTreeLOD( 'sub-trop-desert.average.deepgreen' ).then( () => {
+                                    this.loadTreeLOD( 'temp-decid.average.darkgreen' ).then( () => {
+                                        this.loadTreeLOD( 'trop-seasonal.average.deepgreen' ).then( () => {
+                                            this.loadTreeLOD( 'trop-seasonal.average.lightgreen' ).then( () => {
+                                                this.loadTreeLOD( 'trop-rain.average.deepgreen' ).then( () => {
+                                                    this.loadTreeLOD( 'trop-rain.average.lightgreen' ).then( () => {
+                                                        resolve()
+                                                    } )
                                                 } )
                                             } )
                                         } )
@@ -1617,6 +2100,29 @@ class Handler_Map extends Program_Module {
         } )
     }
 
+    generateSpatialAudio () {
+        return new Promise( resolve => {
+            const listener = new engine.m3d.audio.listener()
+            program.environments.main.camera.add( listener )
+
+            const sound = new engine.m3d.audio.positional( listener )
+
+            // load a sound and set it as the PositionalAudio object's buffer
+            const audioLoader = new engine.m3d.loader.audio()
+            audioLoader.load( './sounds/environment/seagulls.mp3', function( buffer ) {
+	            sound.setBuffer( buffer )
+	            sound.setRefDistance( 10 )
+                sound.loop = true
+                sound.autoplay = true
+	            sound.play()
+            } )
+
+            MAPGROUP.add( sound )
+
+            resolve()
+        } )
+    }
+
     scaleOut ( val, smin, smax, emin, emax ) {
         const tx = ( val - smin ) / ( smax - smin )
 
@@ -1626,9 +2132,11 @@ class Handler_Map extends Program_Module {
     init () {
         return new Promise( resolve => {
             this.generateMacro( this.settings.mult ).then( () => {
-                this.log.output( 'Map Handler has been initialized' ).reg()
+                this.generateSpatialAudio().then( () => {
+                    this.log.output( 'Map Handler has been initialized' ).reg()
 
-                resolve()
+                    resolve()
+                } )
             } )
         } )
     }
