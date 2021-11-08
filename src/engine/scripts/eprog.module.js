@@ -19,12 +19,7 @@ class EProg {
         }
 
         this.environments = {
-            main: mainEnvContainer ? m3d_enviroment.create( mainEnvContainer )
-            .modify( {
-                alwaysResize: true,
-                name: 'main',
-                subClass: 'main',
-            } ).store().retrieve() : null,
+            main: mainEnvContainer ? new m3d_enviroment.class( mainEnvContainer ) : null,
             subs: {}
         } 
 

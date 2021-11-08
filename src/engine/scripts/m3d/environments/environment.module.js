@@ -88,16 +88,16 @@ class Environment {
         this.controls.screenSpacePanning = false
         this.controls.rotateSpeed = 1
         this.controls.zoomSpeed = 0.3
-        this.controls.minDistance = 10
-        this.controls.maxDistance = 300
+        this.controls.minDistance = 2
+        this.controls.maxDistance = 10
         this.controls.enablePan = true
 
-        this.camera.position.set( 21, 32, -21 ) // ortho - 225.38, 281.34, 288.30
+        this.camera.position.set( 30, 32, -30 ) // ortho - 225.38, 281.34, 288.30
         // this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
         // this.camera.zoom = 1.8506178062217096 // perspective - don't alter
         this.camera.updateMatrixWorld()
 
-		this.controls.target = new reps.m3d.vec3( 0, 0, 0 ) // perspective - 69.1, 5, 132.9
+		this.controls.target = new reps.m3d.vec3( 1.34, 2.61, -1.34 ) // perspective - 69.1, 5, 132.9
 
         this.scene.background = new reps.m3d.color( 0x000000 )
 
@@ -163,6 +163,12 @@ class Environment {
 
             resolve()
         } )
+    }
+
+    initPhysics ( lib ) {
+        this.physics = lib
+
+        
     }
 }
 

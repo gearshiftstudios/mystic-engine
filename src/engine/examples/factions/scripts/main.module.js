@@ -15,6 +15,8 @@ import * as handler_minimap from './handlers/minimap.module.js'
 import * as handler_pawn from './handlers/pawn.module.js'
 import * as handler_settlement from './handlers/settlement.module.js'
 
+import { Ammo } from '../../../scripts/libs/ammo.module.js'
+
 /* Create program class */ 
 class Program extends EProg {
     constructor ( name, mainEnvContainer ) {
@@ -168,31 +170,35 @@ class Program extends EProg {
     }
 
     init () {
-        /* initialize core element prototypes */
-        engine.core.init().then( () => {
-            this.loader( 'pre' ).start()
+        Ammo().then( ( data ) => {
+            this.environments.main.initPhysics( data )
 
-            engine.ui.cursors.multiload( ...cursors.list ).then( () => {
-                engine.ui.cursors.set( 'pointer.standard' ).then( () => {
-                    this.loader( 'pre' ).finishTask()
+            /* initialize core element prototypes */
+            engine.core.init().then( () => {
+                this.loader( 'pre' ).start()
 
-                    stats.init().then( () => {
+                engine.ui.cursors.multiload( ...cursors.list ).then( () => {
+                    engine.ui.cursors.set( 'pointer.standard' ).then( () => {
                         this.loader( 'pre' ).finishTask()
 
-                        listeners.init().then( () => {
+                        stats.init().then( () => {
                             this.loader( 'pre' ).finishTask()
 
-                            this.handlers.maincamera.init().then( () => {
+                            listeners.init().then( () => {
                                 this.loader( 'pre' ).finishTask()
 
-                                /* Add initial Macro Map to main environment scene */ 
-                                this.environments.main.scene.add( this.macromap )
+                                this.handlers.maincamera.init().then( () => {
+                                    this.loader( 'pre' ).finishTask()
+
+                                    /* Add initial Macro Map to main environment scene */ 
+                                    this.environments.main.scene.add( this.macromap )
         
-                                /* Initialize handlers */ 
-                                this.handlers.macromap.init().then( () => {
-                                    this.handlers.buildings.init().then( () => {
-                                        this.handlers.nations.init().then( () => {
-                                            this.animate()
+                                    /* Initialize handlers */ 
+                                    this.handlers.macromap.init().then( () => {
+                                        this.handlers.buildings.init().then( () => {
+                                            this.handlers.nations.init().then( () => {
+                                                this.animate()
+                                            } )
                                         } )
                                     } )
                                 } )
