@@ -41,6 +41,8 @@ class Water_LowPoly {
             }
         }
 
+        this.meshMaterial = this.params.options.shiny ? 'phong' : 'standard'
+
         switch ( this.params.options.animation ) {
             case 'fade':
                 const geometry = new Array(
@@ -61,7 +63,7 @@ class Water_LowPoly {
                 this.forms = new Array(
                     new engine.m3d.mesh.default(
                         geometry[ 0 ],
-                        new engine.m3d.mat.mesh[ this.params.options.shiny ? 'phong' : 'standard' ]( { 
+                        new engine.m3d.mat.mesh[ this.meshMaterial ]( { 
                             color: this.params.options.color,
                             flatShading: true, 
                             opacity: this.params.options.opacity,
@@ -70,7 +72,7 @@ class Water_LowPoly {
                     ),
                     new engine.m3d.mesh.default(
                         geometry[ 1 ],
-                        new engine.m3d.mat.mesh[ this.params.options.shiny ? 'phong' : 'standard' ]( { 
+                        new engine.m3d.mat.mesh[ this.meshMaterial ]( { 
                             color: this.params.options.color,
                             flatShading: true, 
                             opacity: this.params.options.opacity,
@@ -79,15 +81,15 @@ class Water_LowPoly {
                     )
                 )
 
-                this.forms[ 0 ].initPositions = []
+                this.forms[ 0 ].initPositions = new Array( ...geometry[ 0 ].attributes.position.array )
                 this.forms[ 0 ].receiveShadow = true
                 this.forms[ 0 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
-                this.forms[ 0 ].position.y = 0.15
+                this.forms[ 0 ].position.y = 0.1
 
-                this.forms[ 1 ].initPositions = []
+                this.forms[ 1 ].initPositions = new Array( ...geometry[ 1 ].attributes.position.array )
                 this.forms[ 1 ].receiveShadow = true
                 this.forms[ 1 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
-                this.forms[ 1 ].position.y = 0.15
+                this.forms[ 1 ].position.y = 0.1
 
                 break
         }
