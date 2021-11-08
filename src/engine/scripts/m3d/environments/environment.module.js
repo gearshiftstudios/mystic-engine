@@ -4,6 +4,7 @@ import * as reps from '../../mystic.module.js'
 /* import M3D */ 
 import * as m3d_renderer_css from '../renderers/css2d.module.js'
 import * as m3d_controls from '../controls/orbit.module.js'
+import * as m3d_effect_outline from '../effects/outline.module.js'
 
 class Environment {
     constructor ( container = document.body, options = {} ) {
@@ -53,6 +54,13 @@ class Environment {
                 antialias: true
             } ),
         }
+
+        this.outlineEffect = new m3d_effect_outline.effect( this.renderers.webgl, {
+            defaultThickness: 0.007,
+            color: new reps.m3d.color( 0x000000 ),
+            defaultAlpha: 0.8,
+            defaultKeepAlive: true
+        } )
 
         defaults.controls = new m3d_controls.orbit( this.camera, this.renderers.webgl.domElement )
 
@@ -137,6 +145,7 @@ class Environment {
         if ( this.container.isShowing == true ) {
             this.renderers.css2d.render( this.scene, this.camera )
             this.renderers.webgl.render( this.scene, this.camera )
+            // this.outlineEffect.render( this.scene, this.camera )
 
             if ( this.controls.shouldUpdate ) this.controls.update()
         }
@@ -144,22 +153,10 @@ class Environment {
 
     resize () {
         return new Promise( resolve => {
-            this.renderers.css2d.setPixelRatio( window.devicePixelRatio )
             this.renderers.webgl.setPixelRatio( window.devicePixelRatio )
 
-            switch ( this.alwaysResize ) {
-                case false:
-                    if ( this.container.isShowing == true ) {
-                        this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                        this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                    }
-    
-                    break
-                case true:
-                    this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                    this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-                    break
-            }
+            this.renderers.css2d.setSize( this.container.offsetWidth, this.container.offsetHeight )
+            this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
 
             this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight
             this.camera.updateProjectionMatrix()

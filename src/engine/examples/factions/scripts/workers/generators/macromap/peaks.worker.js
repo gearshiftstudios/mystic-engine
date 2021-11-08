@@ -85,18 +85,18 @@ onmessage = e => {
                 }
     
                 if ( temp.chunkGeo[ i ][ z ] > temp.elevMin ) {
-                    if ( temp.chunkGeo[ i ][ z ] > temp.elevMin && temp.chunkGeo[ i ][ z ] < temp.elevMin + 1 ) temp.chunkGeo[ i ][ z ] = 0.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 1 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 3 ) temp.chunkGeo[ i ][ z ] = 0.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 3 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 5 ) temp.chunkGeo[ i ][ z ] = 1
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 5 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 7 ) temp.chunkGeo[ i ][ z ] = 1.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 7 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 9 ) temp.chunkGeo[ i ][ z ] = 2
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 9 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 11 ) temp.chunkGeo[ i ][ z ] = 2.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 11 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 13 ) temp.chunkGeo[ i ][ z ] = 3
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 13 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 15 ) temp.chunkGeo[ i ][ z ] = 4.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 15 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 17 ) temp.chunkGeo[ i ][ z ] = 5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 17 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 19 ) temp.chunkGeo[ i ][ z ] = 5.5
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 19 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 21 ) temp.chunkGeo[ i ][ z ] = 6
-                    if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 21 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 23 ) temp.chunkGeo[ i ][ z ] = 6.5
+                    // if ( temp.chunkGeo[ i ][ z ] > temp.elevMin && temp.chunkGeo[ i ][ z ] < temp.elevMin + 1 ) temp.chunkGeo[ i ][ z ] = 0.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 1 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 3 ) temp.chunkGeo[ i ][ z ] = 0.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 3 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 5 ) temp.chunkGeo[ i ][ z ] = 1
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 5 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 7 ) temp.chunkGeo[ i ][ z ] = 1.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 7 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 9 ) temp.chunkGeo[ i ][ z ] = 2
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 9 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 11 ) temp.chunkGeo[ i ][ z ] = 2.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 11 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 13 ) temp.chunkGeo[ i ][ z ] = 3
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 13 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 15 ) temp.chunkGeo[ i ][ z ] = 4.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 15 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 17 ) temp.chunkGeo[ i ][ z ] = 5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 17 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 19 ) temp.chunkGeo[ i ][ z ] = 5.5
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 19 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 21 ) temp.chunkGeo[ i ][ z ] = 6
+                    // if ( temp.chunkGeo[ i ][ z ] >= temp.elevMin + 21 && temp.chunkGeo[ i ][ z ] < temp.elevMin + 23 ) temp.chunkGeo[ i ][ z ] = 6.5
     
                     if ( hpx != 0 &&
                         hpx != temp.heightMaps[ i ].height - 1 &&
@@ -107,8 +107,8 @@ onmessage = e => {
                         wpx != 1 &&
                         wpx != temp.heightMaps[ i ].width - 2     
                     ) {
-                        // temp.chunkGeo[ i ][ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
-                        // temp.chunkGeo[ i ][ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
+                        temp.chunkGeo[ i ][ x ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter x
+                        temp.chunkGeo[ i ][ y ] += methods.scaleOut( Math.random(), 0, 1, -0.25, 0.25 ) //jitter y
                     }
                 }
     

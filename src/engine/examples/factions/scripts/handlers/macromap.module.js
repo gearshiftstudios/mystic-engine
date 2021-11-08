@@ -639,7 +639,7 @@ class Handler_Map extends Program_Module {
                         MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x174000
                         break
                     case 3:
-                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x174000
+                        MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x102e00
                         break
                     case 4:
                         MAPGROUP.chunks[ chunkIndex ].faces[ face ].terrainColor = 0x102e00
@@ -1777,12 +1777,21 @@ class Handler_Map extends Program_Module {
                     
                     const uniScale = this.trees[ b ][ h ].uniScale
                     const geometry = this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].geometry.clone()
-                    const material = this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].material
+                    const material = new engine.m3d.mat.mesh.standard( {
+                        flatShading: true,
+                        map: this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].material.map,
+                    } )
+
+                    // const material = new engine.m3d.MeshToonMaterial( { 
+                    //     map: this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].material.map,
+                    //     side: engine.m3d.doubleSide
+                    // } )
 
                     if ( !MAPGROUP.instances.trees[ b ] ) MAPGROUP.instances.trees[ b ] = {}
     
                     MAPGROUP.instances.trees[ b ][ h ] = new engine.m3d.mesh.instanced( geometry, material, trees.length )
                     MAPGROUP.instances.trees[ b ][ h ].castShadow = true
+                    MAPGROUP.instances.trees[ b ][ h ].userData.outlineColor = new engine.m3d.color( 0x000000 )
 
                     trees.forEach( ( t, ix ) => {
                         let randomScale = uniScale + engine.math.random.number.between( 0, 0.05 )
@@ -1802,9 +1811,9 @@ class Handler_Map extends Program_Module {
                                 randomScale = 0.035 + engine.math.random.number.between( 0, 0.005 )
 
                                 dummy.rotation.set(
-                                    engine.m3d.util.math.degToRad( engine.math.random.number.between( -15, 15 ) ),
+                                    engine.m3d.util.math.degToRad( engine.math.random.number.between( -5, 5 ) ),
                                     engine.m3d.util.math.degToRad( engine.math.random.number.between( -360, 360 ) ),
-                                    engine.m3d.util.math.degToRad( engine.math.random.number.between( -15, 15 ) )
+                                    engine.m3d.util.math.degToRad( engine.math.random.number.between( -5, 5 ) )
                                 )
 
                                 break
