@@ -23,13 +23,6 @@ const OrbitControls = function ( object, domElement ) {
 		var factor = 1.0 + ( zoomEnd - this.zoomStart ) * this.zoomSpeed
 		scale *= factor
 
-        if ( distance < 30 ) {
-            const angle = M3DREP.util.math.degToRad( 30 + factor )
-
-            this.maxPolarAngle = angle
-            this.minPolarAngle = angle
-        }
-
 		this.zoomStart += ( zoomEnd - this.zoomStart ) * this.dampingFactor
 	}
 
@@ -92,7 +85,7 @@ const OrbitControls = function ( object, domElement ) {
     this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 }
 
     // Mouse buttons
-    this.mouseButtons = { LEFT: M3DREP.mouse.ROTATE, MIDDLE: M3DREP.mouse.DOLLY, RIGHT: M3DREP.mouse.PAN }
+    this.mouseButtons = { LEFT: M3DREP.mouse.ROTATE, MIDDLE: M3DREP.mouse.DOLLY, RIGHT: null }
 
     // Touch fingers
     this.touches = { ONE: M3DREP.touch.ROTATE, TWO: M3DREP.touch.DOLLY_PAN }

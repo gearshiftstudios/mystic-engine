@@ -47,6 +47,8 @@ class Environment {
         this.MUID = `environment.${ reps.m3d.MUID.generate() }`
         this.scene = !options ? new reps.m3d.scene() : !options.scene ? new reps.m3d.scene() : options.scene.isScene ? options.scene : new reps.m3d.scene()
 
+        this.scene.add( this.camera )
+
         this.renderers = {
             css2d: new m3d_renderer_css.renderer(),
             webgl: new reps.m3d.renderer.webgl( { 
@@ -66,7 +68,7 @@ class Environment {
 
         this.renderers.webgl.setPixelRatio( window.devicePixelRatio )
         this.renderers.webgl.setSize( this.container.offsetWidth, this.container.offsetHeight )
-        this.renderers.webgl.outputEncoding = reps.m3d.encoding.gamma
+        this.renderers.webgl.outputEncoding = reps.m3d.encoding.srgb
         this.renderers.webgl.gammaFactor = 2.2
         this.renderers.webgl.shadowMap.enabled = true
         this.renderers.webgl.shadowMap.type = reps.m3d.shadow.map.pcfSoft
@@ -92,7 +94,7 @@ class Environment {
         this.controls.maxDistance = 10
         this.controls.enablePan = true
 
-        this.camera.position.set( 30, 32, -30 ) // ortho - 225.38, 281.34, 288.30
+        this.camera.position.set( -30, 32, 30 ) // ortho - 225.38, 281.34, 288.30
         // this.camera.rotation.set( -0.7861, 0.5200, 0.4618 ) // perspective - don't alter
         // this.camera.zoom = 1.8506178062217096 // perspective - don't alter
         this.camera.updateMatrixWorld()

@@ -4,14 +4,15 @@ import { EProg } from '../../../scripts/eprog.module.js'
 import * as stats from '../../../scripts/libs/stats.module.js'
 
 import { Ammo } from '../../../scripts/libs/ammo.module.js'
-import { Water_LowPoly } from '../../../scripts/m3d/water/lowpoly.module.js'
+import { Water_LowPoly_Shader } from '../../../scripts/m3d/water/lowpoly-shader.module.js'
+import * as listeners from './listeners.module.js'
 
 /* Create program class */ 
 class Program extends EProg {
     constructor ( name, mainEnvContainer ) {
         super( name, mainEnvContainer )
 
-        this.water = new Water_LowPoly()
+        this.water = new Water_LowPoly_Shader( 20, 20 )
 
         this.temp = {
             mixer: null,
@@ -23,8 +24,9 @@ class Program extends EProg {
             stats.element.begin()
 
             var delta = this.temp.clock.getDelta()
-        
-            if ( this.water.initialzied ) this.water.update()
+
+            if ( listeners.initialized ) listeners.recursive()
+            if ( this.water.initialized ) this.water.update()
 
             this.environments.main.render()
 
@@ -41,8 +43,10 @@ class Program extends EProg {
             /* initialize core element prototypes */
             engine.core.init().then( () => {
                 stats.init().then( () => {
-                    this.water.init( this.environments.main.scene ).then( () => {
-                        this.animate()
+                    listeners.init().then( () => {
+                        this.water.init( this.environments.main.scene ).then( () => {
+                            this.animate()
+                        } )
                     } )
                 } )
             } )

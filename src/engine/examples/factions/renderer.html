@@ -30,6 +30,66 @@
 			canvas#debug {
 				display: none;
 			}
+
+			cursor-pan {
+				position: absolute;
+				left: 0;
+				top: 0;
+
+				width: 64px;
+				height: 32px;
+
+				animation: opacity-cursor 1s ease forwards;
+				background-image: url( '../../assets/cursors/metal/arrow.pan.long.32.png' );
+				background-position: center;
+				background-repeat: no-repeat;
+				background-size: contain;
+				display: none;
+				transform: translate( -32px, -16px );
+
+				cursor: none;
+
+				pointer-events: none;
+
+				z-index: 999;
+			}
+
+			cursor-pan-center {
+				position: absolute;
+				left: 50vw;
+				top: 50vh;
+
+				width: 32px;
+				height: 32px;
+
+				animation: opacity-cursor 1s ease forwards;
+				background-image: url( '../../assets/cursors/metal/pan.ring.32.png' );
+				background-position: center;
+				background-repeat: no-repeat;
+				background-size: contain;
+				display: none;
+				transform: translate( -16px, -16px );
+
+				cursor: none;
+
+				pointer-events: none;
+				
+				z-index: 1000;
+			}
+
+			/* @keyframes bounce-scale {
+  				0% { transform: translate( -16px, -16px ) scale3d( 0, 0, 0 ); }
+  				20% { transform: translate( -16px, -16px ) scale3d( 1.1, 1.1, 1 ); }
+  				40% { transform: translate( -16px, -16px ) scale3d( 0.98, 0.98, 1 ); }
+  				60% { transform: translate( -16px, -16px ) scale3d( 1.05, 1.05, 1); }
+  				80% { transform: translate( -16px, -16px ) scale3d( 1.01, 1.01, 1); }
+  				100% { transform: translate( -16px, -16px ) scale3d( 1, 1, 1); }
+			} */
+
+			@keyframes opacity-cursor {
+				from { opacity: 0%; }
+				to { opacity: 100%; }
+			}
 		</style>
 		
 		<script src='scripts/main.module.js' type='module'></script>
@@ -189,5 +249,8 @@
 		</state>
 		
 		<state id='debug'></state>
+
+		<cursor-pan-center></cursor-pan-center>
+		<cursor-pan></cursor-pan>
   	</body>
 </html>

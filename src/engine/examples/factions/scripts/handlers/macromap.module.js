@@ -1,11 +1,11 @@
 import * as engine from '../../../../scripts/mystic.module.js'
 import * as m3d from '../../../../scripts/m3d/rep.module.js'
 import * as animator from '../../../../scripts/libs/gsap/gsap.module.js'
-import { noise } from '../../../../scripts/libs/perlin.module.js'
 
 import { Program_Module } from '../module.module.js'
-
+import { noise } from '../../../../scripts/libs/perlin.module.js'
 import * as handler_minimap from './minimap.module.js'
+import { Water_LowPoly_Shader } from '../../../../scripts/m3d/water/lowpoly-shader.module.js'
 
 window.dummy = new engine.m3d.object3D()
 
@@ -25,10 +25,9 @@ class Map extends engine.m3d.object3D {
         this.mult = mult
         this.type = 'Map'
 
-        this.waterDetails = {
-            uniforms: {
-
-            }
+        this.water  = {
+            data: null,
+            group: new engine.m3d.group(),
         }
 
         this.elev = {
@@ -739,9 +738,6 @@ class Handler_Map extends Program_Module {
                 program.environments.main.controls.maxDistance = program.macromap.size.width / 1.667
     
                 handler_minimap.rep.update.pixels()
-    
-                MAPGROUP.water[ 0 ].geometry.attributes.position.needsUpdate = true
-                MAPGROUP.water[ 1 ].geometry.attributes.position.needsUpdate = true
 
                 MAPGROUP.animateWater = true
                 MAPGROUP.initialized = true
@@ -756,7 +752,8 @@ class Handler_Map extends Program_Module {
             program.loader( 'macromap' ).start()
 
             this.generateHeightmapCanvases().then( () => {
-                this.generateChunkData( mult, mult, 0.6, 'none', MAPGROUP.size.width, MAPGROUP.size.height, 0.5, MAPGROUP.biomePreset ).then( () => {
+
+                this.generateChunkData( mult, mult, 1, 'none', MAPGROUP.size.width, MAPGROUP.size.height, 0.5, MAPGROUP.biomePreset ).then( () => {
                     this.drawChunkData().then( () => {
                         program.loader( 'macromap' ).finishTask()
 
@@ -906,6 +903,13 @@ class Handler_Map extends Program_Module {
 
             return ( out )
         }
+
+        function clamp ( val, min, max ) {
+            if ( val > max ) val = max
+            if ( val < min ) val = min
+
+            return ( val )
+        }
     
         function draw () {
             ctx.clearRect( 0, 0, canvas.width, canvas.height )
@@ -914,6 +918,47 @@ class Handler_Map extends Program_Module {
                 for ( let y = 0; y < height; y++ ) {
                     ctx.fillStyle = `rgb(${ heightMap[ x ][ y ] *  255 },${ heightMap[ x ][ y ] * 255 },${ heightMap[ x ][ y ] * 255 })`
                     ctx.fillRect( x * cellSize, y * cellSize, cellSize, cellSize )
+                }
+            }
+        }
+
+        function ridgifyEdit(x,y) {
+            for (let x1 = -1; x1 < 1; x1++) {
+                for (let y1 = -1; y1 < 1; y1++) {
+                    if (heightMap[x][y] !== 0) {
+                        if (heightMap[x+x1][y+y1] <= heightMap[x][y] && heightMap[x+x1][y+y1] <= 0.1 && heightMap[x+x1][y+y1] >= 0) {
+                            heightMap[x+x1][y+y1] = heightMap[x][y]*0.99
+                            // if (x1 > 1 && y1 > 1 && x1 < width - 1 && y1 < height - 1) {
+                            // ridgifyEdit(x+x1,y+y1)
+                            // }
+                        } else {
+                            // heightMap[x+x1][y+y1] = 0
+                        }
+                    }
+                }
+            }
+            // heightMap[x][y] *= 10
+        }
+
+        function ridgify1() {
+            for (let x = 2; x < width-2; x++) {
+                for (let y = 2; y < height-2; y++) {
+                    if (heightMap[x][y] !== 0) {
+                        ridgifyEdit(x,y)
+                    }
+                }
+            }
+        }
+
+        function reNoise() {
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    let ef = noise.perlin2(x*multiplierPerlin,y*multiplierPerlin)
+                    ef = ef / (1 + 0.5 + 0.25);
+                    ef += 1.0;
+                    ef /= 2.0; 
+                    heightMap[x][y] -= ef/20
+                    heightMap[x][y] = clamp(heightMap[x][y],0,1)
                 }
             }
         }
@@ -1268,6 +1313,10 @@ class Handler_Map extends Program_Module {
     
             initMasks()
             initHM()
+
+            // for ( let i = 0; i < 15; i++ ) ridgify1()
+
+            reNoise()
             applyMask( mask )
             initTM()
             initMM()
@@ -1366,17 +1415,9 @@ class Handler_Map extends Program_Module {
             }
 
             if ( MAPGROUP.water ) {
-                if ( MAPGROUP.water[ 0 ] != null ) {
-                    MAPGROUP.remove( MAPGROUP.water[ 0 ] )
-    
-                    MAPGROUP.water[ 0 ] = null
-    
-                    if ( MAPGROUP.water[ 1 ] != null ) {
-                        MAPGROUP.remove( MAPGROUP.water[ 1 ] )
-        
-                        MAPGROUP.water[ 1 ] = null
-                    }
-                }
+                MAPGROUP.remove( MAPGROUP.water.mesh )
+
+                MAPGROUP.water = null
             }
 
             if ( MAPGROUP.background ) {
@@ -1889,72 +1930,18 @@ class Handler_Map extends Program_Module {
 
     generateWater () {
         return new Promise ( resolve => {
-            const worker = new Worker( './scripts/workers/generators/water.worker.module.js', {
-                type: 'module'
-            } )
-
-            MAPGROUP.waterGeo = [ 
-                new engine.m3d.geometry.buffer.plane( 
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width * 2,
-                    MAPGROUP.size.width * 2
-                ),
-                new engine.m3d.geometry.buffer.plane( 
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width,
-                    MAPGROUP.size.width * 2,
-                    MAPGROUP.size.width * 2
-                ),
-            ]
-
-            MAPGROUP.water = [
-                new engine.m3d.mesh.default(
-                    MAPGROUP.waterGeo[ 0 ],
-                    new engine.m3d.mat.mesh.phong( { 
-                        color: 0x255e6b,
-                        flatShading: true, 
-                        opacity: 0.7,
-                        transparent: true,
-                    } )
-                ),
-                new engine.m3d.mesh.default(
-                    MAPGROUP.waterGeo[ 1 ],
-                    new engine.m3d.mat.mesh.phong( { 
-                        color: 0x255e6b,
-                        flatShading: true, 
-                        opacity: 0.7,
-                        transparent: true,
-                    } )
-                )
-            ]
-
-            MAPGROUP.water[ 0 ].initPositions = []
-            MAPGROUP.water[ 0 ].receiveShadow = true
-            MAPGROUP.water[ 0 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
-            MAPGROUP.water[ 0 ].position.y = 0.15
-
-            MAPGROUP.water[ 1 ].initPositions = []
-            MAPGROUP.water[ 1 ].receiveShadow = true
-            MAPGROUP.water[ 1 ].rotation.x = engine.m3d.util.math.degToRad( -90 )
-            MAPGROUP.water[ 1 ].position.y = 0.25
-
-            MAPGROUP.add( MAPGROUP.water[ 0 ] )
-            MAPGROUP.add( MAPGROUP.water[ 1 ] )
-
-            worker.postMessage( [ 
-                MAPGROUP.waterGeo[ 0 ].attributes.position.array,
-                MAPGROUP.waterGeo[ 1 ].attributes.position.array,
+            MAPGROUP.water = new Water_LowPoly_Shader(
+                MAPGROUP.size.width,
+                MAPGROUP.size.height,
                 MAPGROUP.size.width,
                 MAPGROUP.size.height
-            ] )
+            )
 
-            worker.onmessage = e => {
-                MAPGROUP.waterGeo[ 0 ].attributes.position.array = e.data[ 0 ]
-                MAPGROUP.waterGeo[ 1 ].attributes.position.array = e.data[ 1 ]
+            MAPGROUP.water.init( MAPGROUP ).then( () => {
+                MAPGROUP.water.mesh.position.y = 0.1
 
                 resolve()
-            }
+            } )
         } )
     }
 

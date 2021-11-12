@@ -123,44 +123,13 @@ class Program extends EProg {
                 if ( 
                     this.macromap.water && 
                     this.macromap.animateWater 
-                ) {
-                    this.macromap.water[ 0 ].material.opacity = 0.7 + Math.sin(new Date().getTime() * .0025)
-                    this.macromap.water[ 1 ].material.opacity = 0.7 - Math.sin(new Date().getTime() * .0025)
-                }
+                ) this.macromap.water.update()
                 
                 this.handlers.maincamera.updateCameraElev()
                 
                 /* Only allow Side-of-Screen map movement if window isn't 
                    resizing & mouse is inside the window */
-                if ( 
-                    !this.domevents.window.resizing.isOn() && 
-                    this.domevents.window.mouse.inside.isOn()
-                ) {
-                    if (
-                        this.mouse.screen.x >= window.innerWidth - 15 ||
-                        this.mouse.screen.x <= 15 ||
-                        this.mouse.screen.y >= window.innerHeight - 15 ||
-                        this.mouse.screen.y <= 15
-                    ) {
-                        this.environments.main.controls.panLeft(
-                            -1 * Math.cos(
-                                Math.atan2(
-                                    this.mouse.screen.y - window.innerHeight / 2,
-                                    this.mouse.screen.x - window.innerWidth / 2
-                                )
-                            )
-                        )
-    
-                        this.environments.main.controls.panUp(
-                            -1 * Math.sin(
-                                Math.atan2(
-                                    this.mouse.screen.y - window.innerHeight / 2,
-                                    this.mouse.screen.x - window.innerWidth / 2
-                                )
-                            )
-                        )
-                    }
-                }
+                if ( listeners.initialized ) listeners.recursive()
             }
 
             stats.element.end()

@@ -1,4 +1,59 @@
 import * as engine from '../../../../scripts/mystic.module.js'
+import { Settings } from '../settings.module.js'
+
+const S = Settings,
+
+    $Sa = 0, // active index
+    $Se = 1, // enabled index
+
+    SS = Settings.scene,
+    SSM = Settings.scene.movement
+
+let initialized = false
+
+function recursive () {
+    SSM.panning[ $Sa ].mouseRightDrag.isActive( 'switch' )
+        .then( s => {
+            if (
+                !program.domevents.window.resizing.isOn() && 
+                program.domevents.window.mouse.inside.isOn()
+            ) {
+                const speed = SSM.panning[ $Sa ].speed 
+                    * program.mouse.distance.fromCenter 
+                    * ( program.environments.main.camera.position.distanceTo(
+                        program.environments.main.controls.target ) / 2 
+                    )
+
+                if ( s ) {
+                    program.environments.main.controls.panLeft(
+                        speed * Math.cos( program.mouse.angle.toCenter )
+                    )
+
+                    program.environments.main.controls.panUp(
+                        speed * Math.sin( program.mouse.angle.toCenter )
+                    )
+                } else {
+                    SSM.panning[ $Sa ].screenEdges.isEnabled( true )
+                        .then( _s => {
+                            if (
+                                program.mouse.screen.x >= window.innerWidth - 15 ||
+                                program.mouse.screen.x <= 15 ||
+                                program.mouse.screen.y >= window.innerHeight - 15 ||
+                                program.mouse.screen.y <= 15
+                            ) {
+                                program.environments.main.controls.panLeft(
+                                    speed * Math.cos( program.mouse.angle.toCenter )
+                                )
+            
+                                program.environments.main.controls.panUp(
+                                    speed * Math.sin( program.mouse.angle.toCenter )
+                                )
+                            }
+                        } )
+                }               
+            }
+        } )
+}
 
 function init () {
     return new Promise( resolve => {
@@ -151,11 +206,6 @@ function init () {
         }
 
         window.onmousemove = e => {
-            program.mouse.screen.x = e.clientX
-	        program.mouse.screen.y = e.clientY
-            program.mouse.world.x = ( e.clientX / window.innerWidth ) * 2 - 1
-	        program.mouse.world.y = - ( e.clientY / window.innerHeight ) * 2 + 1
-
             const raycaster = new engine.m3d.ray.caster()
             raycaster.firstHitOnly = true
 
@@ -164,60 +214,138 @@ function init () {
 
                 let intersections = raycaster.intersectObject( program.macromap.chunkMeshes, true )
 
-                if ( intersections.length > 0 ) {
-                    const intersectedChunk = {
-                        self: program.macromap.chunks[ intersections[ 0 ].object.chunkIndex ],
-                        index: intersections[ 0 ].object.chunkIndex,
-                        face: intersections[ 0 ].faceIndex,
-                    }
+                // if ( intersections.length > 0 ) {
+                //     const intersectedChunk = {
+                //         self: program.macromap.chunks[ intersections[ 0 ].object.chunkIndex ],
+                //         index: intersections[ 0 ].object.chunkIndex,
+                //         face: intersections[ 0 ].faceIndex,
+                //     }
 
-                    const faces = intersectedChunk.self.faces
+                //     const faces = intersectedChunk.self.faces
 
-                    if ( !faces[ intersectedChunk.face ].isCrust ) {
-                        if ( !program.handlers.macromap.chunks.point.hovered.includes( 
-                            intersectedChunk.index
-                        ) ) {
-                            program.handlers.macromap.chunks.point.hovered = new Array()
-                            program.handlers.macromap.chunks.point.hovered.push( intersectedChunk.index )
-                        }
+                //     if ( !faces[ intersectedChunk.face ].isCrust ) {
+                //         if ( !program.handlers.macromap.chunks.point.hovered.includes( 
+                //             intersectedChunk.index
+                //         ) ) {
+                //             program.handlers.macromap.chunks.point.hovered = new Array()
+                //             program.handlers.macromap.chunks.point.hovered.push( intersectedChunk.index )
+                //         }
                     
-                        if ( !program.handlers.macromap.tiles.point.hovered.includes( 
-                            `${ intersectedChunk.index }.${ faces[ intersectedChunk.face ].univTile }` 
-                        ) ) {
-                            if ( program.modes.macrobuild[ 'single' ].isActive() ) {
-                                mousemove_buildModeTiles( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
-                            }
+                //         if ( !program.handlers.macromap.tiles.point.hovered.includes( 
+                //             `${ intersectedChunk.index }.${ faces[ intersectedChunk.face ].univTile }` 
+                //         ) ) {
+                //             if ( program.modes.macrobuild[ 'single' ].isActive() ) {
+                //                 mousemove_buildModeTiles( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
+                //             }
 
-                            if ( program.modes.macrobuild[ 'fort' ].isActive() ) {
-                                const tiles = new Array()
-                                tiles.push( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
+                //             if ( program.modes.macrobuild[ 'fort' ].isActive() ) {
+                //                 const tiles = new Array()
+                //                 tiles.push( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
 
-                                program.macromap.allTiles[ faces[ intersectedChunk.face ].univTile ]
-                                    .adjacencies.forEach( a => {
-                                        tiles.push( [ program.macromap.allTiles[ a ].chunkIndex, a ] )
-                                    } )
+                //                 program.macromap.allTiles[ faces[ intersectedChunk.face ].univTile ]
+                //                     .adjacencies.forEach( a => {
+                //                         tiles.push( [ program.macromap.allTiles[ a ].chunkIndex, a ] )
+                //                     } )
 
-                                mousemove_buildModeTiles( ...tiles )
-                            }
+                //                 mousemove_buildModeTiles( ...tiles )
+                //             }
 
-                            if ( program.modes.macrobuild[ 'settlement' ].isActive() ) {
-                                const tiles = new Array()
-                                tiles.push( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
+                //             if ( program.modes.macrobuild[ 'settlement' ].isActive() ) {
+                //                 const tiles = new Array()
+                //                 tiles.push( [ intersectedChunk.index, faces[ intersectedChunk.face ].univTile ] )
 
-                                program.macromap.allTiles[ faces[ intersectedChunk.face ].univTile ]
-                                    .adjacencies.forEach( a => {
-                                        tiles.push( [ program.macromap.allTiles[ a ].chunkIndex, a ] )
+                //                 program.macromap.allTiles[ faces[ intersectedChunk.face ].univTile ]
+                //                     .adjacencies.forEach( a => {
+                //                         tiles.push( [ program.macromap.allTiles[ a ].chunkIndex, a ] )
 
-                                        program.macromap.allTiles[ a ].adjacencies.forEach( aa => {
-                                            tiles.push( [ program.macromap.allTiles[ aa ].chunkIndex, aa ] )
-                                        } )
-                                    } )
+                //                         program.macromap.allTiles[ a ].adjacencies.forEach( aa => {
+                //                             tiles.push( [ program.macromap.allTiles[ aa ].chunkIndex, aa ] )
+                //                         } )
+                //                     } )
 
-                                mousemove_buildModeTiles( ...tiles )
-                            }
-                        }
+                //                 mousemove_buildModeTiles( ...tiles )
+                //             }
+                //         }
+                //     }
+                // }
+            }
+        }
+
+        App.body.onpointermove = e => {
+            program.mouse.screen.x = e.clientX
+            program.mouse.screen.y = e.clientY
+            program.mouse.world.x = ( e.clientX / window.innerWidth ) * 2 - 1
+	        program.mouse.world.y = - ( e.clientY / window.innerHeight ) * 2 + 1
+            
+            program.mouse.angle.toCenter = Math.atan2(
+                e.clientY - window.innerHeight / 2,
+                e.clientX - window.innerWidth / 2
+            )
+
+            const distanceX = e.clientX - ( window.innerWidth / 2 ),
+                distanceY = e.clientY - ( window.innerHeight / 2 )
+
+            program.mouse.distance.fromCenter = Math.sqrt( ( distanceX * distanceX ) + ( distanceY * distanceY ) )
+
+            App.body.qS( 'cursor-pan' ).style.left = `${ e.clientX }px`
+            App.body.qS( 'cursor-pan' ).style.top = `${ e.clientY }px`
+
+            App.body.qS( 'cursor-pan' ).style.transform = `translate( -32px, -16px ) rotateX( -${ program.environments.main.controls.getPolarAngle() }rad ) rotateZ( ${ program.mouse.angle.toCenter }rad )`
+            App.body.qS( 'cursor-pan-center' ).style.transform = `translate( -16px, -16px ) rotateX( ${ program.environments.main.controls.getPolarAngle() }rad )`
+
+            if ( SSM.panning[ $Se ] ) {
+                if (
+                    ( program.mouse.screen.x >= window.innerWidth - 15 ||
+                    program.mouse.screen.x <= 15 ||
+                    program.mouse.screen.y >= window.innerHeight - 15 ||
+                    program.mouse.screen.y <= 15 ) &&
+                    SSM.panning[ $Sa ].screenEdges.isEnabled()
+                ) {
+                    App.body.style.cursor = 'none'
+                    App.body.qS( 'cursor-pan' ).show()
+                } else {
+                    if ( SSM.panning[ $Sa ].mouseRightDrag.isActive() ) {
+                        App.body.style.cursor = 'none'
+                        App.body.qS( 'cursor-pan' ).show()
+                    } else {
+                        engine.ui.cursors.set( 'pointer.standard' )
+
+                        App.body.qS( 'cursor-pan' ).hide()
                     }
                 }
+            }
+        }
+
+        App.body.onpointerdown = e => {
+            switch ( e.button ) {
+                case 2: 
+                    if ( SSM.panning[ $Se ] ) {
+                        SSM.panning[ $Sa ].mouseRightDrag.isEnabled( true )
+                            .then( s => {
+                                s.activate()
+
+                                App.body.style.cursor = 'none'
+                                App.body.qS( 'cursor-pan' ).show()
+                                App.body.qS( 'cursor-pan-center' ).show()
+                            } )
+                    }
+            }
+        }
+
+        App.body.onpointerup = e => {
+            switch ( e.button ) {
+                case 2: 
+                    if ( SSM.panning[ $Se ] ) {
+                        SSM.panning[ $Sa ].mouseRightDrag.isEnabled( true )
+                            .then( s => {
+                                s.deactivate()
+
+                                engine.ui.cursors.set( 'pointer.standard' )
+
+                                App.body.qS( 'cursor-pan' ).hide()
+                                App.body.qS( 'cursor-pan-center' ).hide()
+                            } )
+                    }
             }
         }
 
@@ -321,8 +449,12 @@ function init () {
             }
         }
 
+        program.domevents.window.mouse.inside.on()
+
+        initialized = true
+
         resolve()
     } )
 }
 
-export { init }
+export { init, initialized, recursive }

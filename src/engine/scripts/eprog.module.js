@@ -16,6 +16,14 @@ class EProg {
         this.mouse = {
             screen: new reps.m3d.vec2(),
             world: new reps.m3d.vec2(),
+
+            angle: {
+                toCenter: 0,
+            },
+
+            distance: {
+                fromCenter: 0,
+            },
         }
 
         this.environments = {
@@ -31,6 +39,11 @@ class EProg {
             isActive () {
                 return this.active
             }
+        }
+
+
+        window.onresize = () => {
+            this.environments.main.resize()
         }
     }
 
