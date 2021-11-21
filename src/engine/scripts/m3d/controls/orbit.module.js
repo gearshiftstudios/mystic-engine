@@ -312,6 +312,14 @@ const OrbitControls = function ( object, domElement ) {
         sphericalDelta.phi -= angle
     }
 
+    this.rotateLeft = function ( angle ) {
+        sphericalDelta.theta -= angle
+    }
+
+    this.rotateUp = function ( angle ) {
+        sphericalDelta.phi -= angle
+    }
+
     this.panTo = function () {
         return function panTo ( left, up, objectMatrix = scope.object.matrix ) {
             const tarX = scope.target.x,

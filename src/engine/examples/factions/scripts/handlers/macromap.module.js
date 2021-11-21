@@ -123,12 +123,12 @@ class Handler_Map extends Program_Module {
                 preset: 0,
             },
             elev: {
-                max: 16,
-                water: 0.3,
+                max: 15,
+                water: 0.1,
             },
             size: {
-                width: 200,
-                height: 200,
+                width: 300,
+                height: 300,
             },
             chunk: {
                 amount: [ 0, 0 ],
@@ -1700,13 +1700,13 @@ class Handler_Map extends Program_Module {
                     }
                         
                     if ( min == MAPGROUP.elev.min && max == MAPGROUP.elev.min ) {
-                        f.terrainColor = 0x255e6b
+                        f.terrainColor = 0xb8a763
                     }
 
                     if ( max - min >= 1 ) {
                         f.isCliff = true
 
-                        f.terrainColor = 0x3a3a3a
+                        f.terrainColor = 0x4a4924
                     }
     
                     if ( min < MAPGROUP.elev.min - 1 ) {
@@ -1821,6 +1821,7 @@ class Handler_Map extends Program_Module {
                     const material = new engine.m3d.mat.mesh.standard( {
                         flatShading: true,
                         map: this.trees[ b ][ h ].levels[ 0 ].object.children[ 0 ].material.map,
+                        side: engine.m3d.doubleSide
                     } )
 
                     // const material = new engine.m3d.MeshToonMaterial( { 
@@ -1931,6 +1932,12 @@ class Handler_Map extends Program_Module {
     generateWater () {
         return new Promise ( resolve => {
             MAPGROUP.water = new Water_LowPoly_Shader(
+                {
+                    amplitude: 0.05,
+                    geometry: 'plane',
+                    shiny: true,
+                },
+
                 MAPGROUP.size.width,
                 MAPGROUP.size.height,
                 MAPGROUP.size.width,
@@ -1938,7 +1945,7 @@ class Handler_Map extends Program_Module {
             )
 
             MAPGROUP.water.init( MAPGROUP ).then( () => {
-                MAPGROUP.water.mesh.position.y = 0.1
+                MAPGROUP.water.mesh.position.y = 0.05
 
                 resolve()
             } )

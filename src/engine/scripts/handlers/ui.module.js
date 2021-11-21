@@ -1,4 +1,15 @@
 import { Handler } from '../handler.module.js'
+import * as engine from '../mystic.module.js'
+
+const cursors = {
+    examples: [
+        [ 'arrow.standard.32', 'auto.standard' ],
+        {
+            path: '../../../assets/cursors/metal/',
+            format: 'png',
+        }
+    ],
+}
 
 class Hanlder_UI extends Handler {
     constructor ( category ) {
@@ -61,6 +72,11 @@ class Hanlder_UI extends Handler {
                     resolve()
                 } )
             },
+            reset: function () {
+                if ( Object.keys( this.list ).length > 0 ) {
+                    this.set( Object.keys( this.list )[ 0 ] )
+                } else document.body.style.cursor = 'auto'
+            },
             set: function ( name ) {
                 return new Promise( resolve => {
                     if ( name ) {
@@ -80,6 +96,101 @@ class Hanlder_UI extends Handler {
             }
         }
     }
+
+    append ( element ) {
+        return new Promise( resolve => {
+            if ( element.isNewElement ) {
+                element.parent.appendChild( element )
+
+                resolve( element )
+            }
+        } )
+    }
+
+    createElement ( 
+        tag = 'div', 
+        parent = document.body, 
+        id = `${ tag }.${ engine.math.random.characters().mixed() }`, 
+        style = {} 
+    ) {
+        return new Promise( resolve => {
+            const element = document.createElement( tag )
+            element.id = id
+            element.parent = parent
+            element.isNewElement = true
+
+            for ( const s in style ) {
+                element.style[ s ] = style[ s ]
+
+                console.log(  )
+            }
+
+            resolve( element )
+        } )
+    }
+
+    createTextbox (
+        text = 'Hello World!',
+        scrollLeft = false,
+        parent = document.body, 
+        id = `textbox.${ engine.math.random.characters().mixed() }`,
+        style = {}
+    ) {
+        return new Promise( resolve => {
+            this.createElement( 'textbox', parent, id, style ).then( element => {
+                element.insert( text )
+
+                element.style.backgroundColor = '#212121'
+                element.style.borderRadius = '5px'
+
+                if ( !scrollLeft ) {
+                    element.style.overflowX = 'hidden'
+                    element.style.overflowY = 'auto'
+                } else {
+                    element.style.overflowX = 'auto'
+                    element.style.overflowY = 'hidden'
+                }
+
+                resolve( element )
+            } )
+        } )
+    }
+
+    createTextboxABS (
+        text = 'Hello World!',
+        orientation = 'lt',
+        scrollLeft = false,
+        parent = document.body, 
+        id = `textbox.${ engine.math.random.characters().mixed() }`,
+        style = {}
+    ) {
+        return new Promise( resolve => {
+            this.createTextbox( text, scrollLeft, parent, id, style ).then( element => {
+                element.style.position = 'absolute'
+
+                switch ( orientation ) {
+                    case 'lb':
+                        element.style.left = '0'
+                        element.style.bottom = '0'
+                        break
+                    case 'lt':
+                        element.style.left = '0'
+                        element.style.top = '0'
+                        break
+                    case 'rb':
+                        element.style.right = '0'
+                        element.style.bottom = '0'
+                        break
+                    case 'rt':
+                        element.style.right = '0'
+                        element.style.top = '0'
+                        break
+                }
+
+                resolve( element )
+            } )
+        } )
+    }
 }
 
-export { Hanlder_UI as handler }
+export { Hanlder_UI as handler, cursors }

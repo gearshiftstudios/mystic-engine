@@ -5,7 +5,7 @@ import * as m3d_enviroment from './m3d/environments/environment.module.js'
 import { Loader } from './loader.module.js'
 
 class EProg {
-    constructor ( name = 'Program', mainEnvContainer = document.body ) {
+    constructor ( name = 'Program', mainEnvContainer = document.body, options = {} ) {
         this.domevents = new reps.core.events()
         this.handlers = {}
         this.loaders = {}
@@ -27,7 +27,7 @@ class EProg {
         }
 
         this.environments = {
-            main: mainEnvContainer ? new m3d_enviroment.class( mainEnvContainer ) : null,
+            main: mainEnvContainer ? new m3d_enviroment.class( mainEnvContainer, options ) : null,
             subs: {}
         } 
 

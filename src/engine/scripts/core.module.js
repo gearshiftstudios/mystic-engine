@@ -3,6 +3,8 @@
 // minimal thinking proccess. I think that things like this 
 // would be very useful to the core of JS but it seems they
 // are not which really sucks. 
+
+let initialized = false
  
 function init () {
     return new Promise( resolve => {
@@ -24,6 +26,8 @@ function init () {
         window.setProgramName = function ( name = 'Program' ) {
             this.programName = name
         }
+
+        document.body.isShowing = true
 
         /* Change the prototype of document */ 
         document.gEBI = document.getElementById
@@ -207,6 +211,8 @@ function init () {
             return this.innerText
 	    }
 
+        initialized = true
+
         resolve()
     } )
 }
@@ -283,4 +289,4 @@ class Events {
     }
 }
 
-export { Events as events, init }
+export { Events as events, init, initialized }

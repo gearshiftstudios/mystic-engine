@@ -1,13 +1,18 @@
 tab {
   position: absolute;
-  left: 0;
-  top: 0;
   background-color: #313131;
   border-radius: 10px;
   overflow: hidden;
 }
 
-tab header {
+tab-lt, tab-rt, tab-lb, tab-rb {
+  position: absolute;
+  background-color: #313131;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+tab-lt header, tab-rt header, tab-lb header, tab-rb header {
   position: absolute;
   left: 0;
   top: 0;
@@ -22,7 +27,14 @@ tab header {
   text-shadow: 0 0 10px black;
 }
 
-tab scrollbox {
+tab-lt header label, tab-rt header label, tab-lb header label, tab-rb header label {
+  margin-left: 5px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  padding: 2.5px 5px 2.5px 5px;
+}
+
+tab-lt scrollbox, tab-rt scrollbox, tab-lb scrollbox, tab-rb scrollbox {
   position: absolute;
   left: 0;
   top: 0;
@@ -33,14 +45,41 @@ tab scrollbox {
   overflow-y: auto;
 }
 
-tab scrollbox[leaflets] {
+tab-lt scrollbox[leaflets], tab-rt scrollbox[leaflets], tab-lb scrollbox[leaflets], tab-rb scrollbox[leaflets] {
   background-attachment: local;
   background-image: url("../../assets/backgrounds/leaflets.svg");
   background-repeat: repeat;
   background-size: 50px 50px;
 }
 
-tab scrollbox item {
+tab-lt scrollbox[leaflets][large], tab-rt scrollbox[leaflets][large], tab-lb scrollbox[leaflets][large], tab-rb scrollbox[leaflets][large] {
+  background-size: 100px 100px;
+}
+
+tab-lt scrollbox[large] item, tab-rt scrollbox[large] item, tab-lb scrollbox[large] item, tab-rb scrollbox[large] item {
+  height: 50px;
+}
+
+tab-lt scrollbox[large] item icon, tab-rt scrollbox[large] item icon, tab-lb scrollbox[large] item icon, tab-rb scrollbox[large] item icon {
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  background-repeat: repeat;
+  background-size: 40px 40px;
+}
+
+tab-lt scrollbox[large] item span, tab-rt scrollbox[large] item span, tab-lb scrollbox[large] item span, tab-rb scrollbox[large] item span {
+  font-size: 15px;
+}
+
+tab-lt scrollbox[large] item square, tab-rt scrollbox[large] item square, tab-lb scrollbox[large] item square, tab-rb scrollbox[large] item square {
+  width: 20px;
+  height: 20px;
+  background-repeat: repeat;
+  background-size: 20px 20px;
+}
+
+tab-lt scrollbox item, tab-rt scrollbox item, tab-lb scrollbox item, tab-rb scrollbox item {
   width: 100%;
   height: 25px;
   color: white;
@@ -48,25 +87,33 @@ tab scrollbox item {
   font-family: 'universal';
   font-size: 12px;
   text-align: left;
-  text-shadow: 0 0 10px black;
   z-index: 11;
 }
 
-tab scrollbox item icon {
+tab-lt scrollbox item icon, tab-rt scrollbox item icon, tab-lb scrollbox item icon, tab-rb scrollbox item icon {
   width: 20px;
   height: 20px;
   margin: 2.5px;
+  background-color: rgba(0, 0, 0, 0.4);
   background-repeat: repeat;
   background-size: 20px 20px;
+  border-radius: 5px;
   display: inline-block;
   vertical-align: middle;
 }
 
-tab scrollbox item icon[object] {
+tab-lt scrollbox item icon[object], tab-rt scrollbox item icon[object], tab-lb scrollbox item icon[object], tab-rb scrollbox item icon[object] {
+  background-color: transparent;
   background-image: url("../../assets/icons/scene-tools.object.png");
+  border-radius: 0px;
 }
 
-tab scrollbox item span {
+tab-lt scrollbox item icon[planet], tab-rt scrollbox item icon[planet], tab-lb scrollbox item icon[planet], tab-rb scrollbox item icon[planet] {
+  background-color: transparent;
+  background-image: url("../../assets/icons/planet.64.png");
+}
+
+tab-lt scrollbox item span, tab-rt scrollbox item span, tab-lb scrollbox item span, tab-rb scrollbox item span {
   padding: 0;
   margin: 0;
   color: white;
@@ -74,11 +121,45 @@ tab scrollbox item span {
   font-family: 'universal';
   font-size: 12px;
   text-align: left;
-  text-shadow: 0 0 10px black;
+  vertical-align: middle;
 }
 
-tab scrollbox item:hover {
+tab-lt scrollbox item square, tab-rt scrollbox item square, tab-lb scrollbox item square, tab-rb scrollbox item square {
+  width: 10px;
+  height: 10px;
+  margin: 0;
+  margin-left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  background-repeat: repeat;
+  background-size: 10px 10px;
+  border-radius: 2.5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+tab-lt scrollbox item:hover, tab-rt scrollbox item:hover, tab-lb scrollbox item:hover, tab-rb scrollbox item:hover {
+  background-color: turquoise;
   font-weight: bold;
   cursor: pointer;
+}
+
+tab-lt {
+  left: 0;
+  top: 0;
+}
+
+tab-rt {
+  right: 0;
+  top: 0;
+}
+
+tab-lb {
+  left: 0;
+  bottom: 0;
+}
+
+tab-rb {
+  right: 0;
+  bottom: 0;
 }
 /*# sourceMappingURL=tab.min.css.map */

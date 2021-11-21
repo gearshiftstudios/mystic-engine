@@ -1,0 +1,141 @@
+tab-rt#planets {
+  width: 300px;
+  height: 535px;
+  margin: 10px;
+  z-index: 100;
+}
+
+tab-rt#planets header {
+  color: white;
+  font-family: 'Montserrat';
+}
+
+tab-rt#planets scrollbox item span {
+  color: white;
+  font-family: 'Montserrat';
+}
+
+tab-rb#planets-map {
+  width: 325px;
+  height: 360px;
+  margin: 10px;
+  z-index: 100;
+}
+
+tab-rb#planets-map header {
+  color: white;
+  font-family: 'Montserrat';
+}
+
+tab-rb#planets-map minimap {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: calc( 100% - 20px);
+  height: calc( 100% - 55px);
+  margin: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+map-planet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  background-image: url("../../../../assets/icons/planet.64.png");
+  background-position: center;
+  background-size: 32px 32px;
+  opacity: 0.75;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  -webkit-transition: 0.15s;
+  transition: 0.15s;
+  -webkit-animation: 0.15s bounce-scale-back forwards;
+          animation: 0.15s bounce-scale-back forwards;
+}
+
+map-planet:hover {
+  opacity: 1;
+  -webkit-animation: 1s bounce-scale-forward forwards;
+          animation: 1s bounce-scale-forward forwards;
+}
+
+@-webkit-keyframes bounce-scale-forward {
+  0% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1, 1, 1);
+            transform: translate(-50%, -50%) scale3d(1, 1, 1);
+  }
+  20% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.375, 1.375, 1);
+            transform: translate(-50%, -50%) scale3d(1.375, 1.375, 1);
+  }
+  40% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.225, 1.225, 1);
+            transform: translate(-50%, -50%) scale3d(1.225, 1.225, 1);
+  }
+  60% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.3125, 1.3125, 1);
+            transform: translate(-50%, -50%) scale3d(1.3125, 1.3125, 1);
+  }
+  80% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.2625, 1.2625, 1);
+            transform: translate(-50%, -50%) scale3d(1.2625, 1.2625, 1);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+            transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+  }
+}
+
+@keyframes bounce-scale-forward {
+  0% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1, 1, 1);
+            transform: translate(-50%, -50%) scale3d(1, 1, 1);
+  }
+  20% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.375, 1.375, 1);
+            transform: translate(-50%, -50%) scale3d(1.375, 1.375, 1);
+  }
+  40% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.225, 1.225, 1);
+            transform: translate(-50%, -50%) scale3d(1.225, 1.225, 1);
+  }
+  60% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.3125, 1.3125, 1);
+            transform: translate(-50%, -50%) scale3d(1.3125, 1.3125, 1);
+  }
+  80% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.2625, 1.2625, 1);
+            transform: translate(-50%, -50%) scale3d(1.2625, 1.2625, 1);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+            transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+  }
+}
+
+@-webkit-keyframes bounce-scale-back {
+  0% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+            transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1, 1, 1);
+            transform: translate(-50%, -50%) scale3d(1, 1, 1);
+  }
+}
+
+@keyframes bounce-scale-back {
+  0% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+            transform: translate(-50%, -50%) scale3d(1.25, 1.25, 1);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) scale3d(1, 1, 1);
+            transform: translate(-50%, -50%) scale3d(1, 1, 1);
+  }
+}
+/*# sourceMappingURL=planets.min.css.map */

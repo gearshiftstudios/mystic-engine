@@ -212,7 +212,5 @@ onmessage = e => {
         t.adjacencies = adjacencies
     } )
 
-    console.log( allTiles1D )
-
     postMessage( [ chunkTiles, allTiles1D, chunkFacesRelTiles, chunkFaces ] )
 }

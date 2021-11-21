@@ -1,96 +1,173 @@
 tab {
     position: absolute;
-    left: 0;
-    top: 0;
     
     background-color: #313131;
     border-radius: 10px;
     overflow: hidden;
 
-    & header {
+    &-lt, &-rt, &-lb, &-rb {
         position: absolute;
-        left: 0;
-        top: 0;
+    
+        background-color: #313131;
+        border-radius: 10px;
+        overflow: hidden;
 
-        width: calc( 100% - 20px );
-        height: 20px;
-
-        margin: 0;
-
-        background-color: #424242;
-        font-family: 'droid';
-        font-size: 15px;
-        letter-spacing: 0.25px;
-        padding: 7.5px 10px 7.5px 10px;
-        text-shadow: 0 0 10px black;
-    }
-
-    & scrollbox {
-        position: absolute;
-        left: 0;
-        top: 0;
-
-        width: 100%;
-        height: calc( 100% - 35px );
-
-        margin: 35px 0px 0px 0px;
-
-        overflow-x: hidden;
-        overflow-y: auto;
-        
-        &[ leaflets ] {
-            background-attachment: local;
-            background-image: url( '../../assets/backgrounds/leaflets.svg' );
-            background-repeat: repeat;
-            background-size: 50px 50px;
-        }
-
-        & item {
-            width: 100%;
-            height: 25px;
-
-            color: white;
-            display: block;
-            font-family: 'universal';
-            font-size: 12px;
-            text-align: left;
+        & header {
+            position: absolute;
+            left: 0;
+            top: 0;
+    
+            width: calc( 100% - 20px );
+            height: 20px;
+    
+            margin: 0;
+    
+            background-color: #424242;
+            font-family: 'droid';
+            font-size: 15px;
+            letter-spacing: 0.25px;
+            padding: 7.5px 10px 7.5px 10px;
             text-shadow: 0 0 10px black;
 
-            z-index: 11;
+            & label {
+                margin-left: 5px;
 
-            & icon {
-                width: 20px;
-                height: 20px;
-
-                margin: 2.5px;
-
+                background-color: rgba( black, 0.4 );
+                border-radius: 5px;
+                padding: 2.5px 5px 2.5px 5px;
+                // vertical-align: middle;
+            }
+        }
+    
+        & scrollbox {
+            position: absolute;
+            left: 0;
+            top: 0;
+    
+            width: 100%;
+            height: calc( 100% - 35px );
+    
+            margin: 35px 0px 0px 0px;
+    
+            overflow-x: hidden;
+            overflow-y: auto;
+            
+            &[ leaflets ] {
+                background-attachment: local;
+                background-image: url( '../../assets/backgrounds/leaflets.svg' );
                 background-repeat: repeat;
-                background-size: 20px 20px;
-                display: inline-block;
-                vertical-align: middle;
+                background-size: 50px 50px;
 
-                &[ object ] {
-                    background-image: url( '../../assets/icons/scene-tools.object.png' );
+                &[ large ] {
+                    background-size: 100px 100px;
                 }
             }
 
-            & span {
-                padding: 0;
-                margin: 0;
+            &[ large ] {
+                & item {
+                    height: 50px;
 
+                    & icon {
+                        width: 40px;
+                        height: 40px;
+        
+                        margin: 5px;
+        
+                        background-repeat: repeat;
+                        background-size: 40px 40px;
+                    }
+
+                    & span {
+                        font-size: 15px;
+                    }
+
+                    & square {
+                        width: 20px;
+                        height: 20px;
+        
+                        background-repeat: repeat;
+                        background-size: 20px 20px;
+                    }
+                }
+            }
+    
+            & item {
+                width: 100%;
+                height: 25px;
+    
                 color: white;
-                display: inline-block;
+                display: block;
                 font-family: 'universal';
                 font-size: 12px;
                 text-align: left;
-                text-shadow: 0 0 10px black;
-            }
+    
+                z-index: 11;
+    
+                & icon {
+                    width: 20px;
+                    height: 20px;
+    
+                    margin: 2.5px;
+                    
+                    background-color: rgba( black, 0.4 );
+                    background-repeat: repeat;
+                    background-size: 20px 20px;
+                    border-radius: 5px;
+                    display: inline-block;
+                    // image-rendering: pixelated;
+                    vertical-align: middle;
+    
+                    &[ object ] {
+                        background-color: transparent;
+                        background-image: url( '../../assets/icons/scene-tools.object.png' );
+                        border-radius: 0px;
+                    }
 
-            &:hover {
-                font-weight: bold;
+                    &[ planet ] {
+                        background-color: transparent;
+                        background-image: url( '../../assets/icons/planet.64.png' );
+                    }
+                }
+    
+                & span {
+                    padding: 0;
+                    margin: 0;
+    
+                    color: white;
+                    display: inline-block;
+                    font-family: 'universal';
+                    font-size: 12px;
+                    text-align: left;
+                    vertical-align: middle;
+                }
 
-                cursor: pointer;
+                & square {
+                    width: 10px;
+                    height: 10px;
+    
+                    margin: 0;
+                    margin-left: 10px;
+                    
+                    background-color: rgba( black, 0.7 );
+                    background-repeat: repeat;
+                    background-size: 10px 10px;
+                    border-radius: 2.5px;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+    
+                &:hover {
+                    background-color: turquoise;
+                    font-weight: bold;
+    
+                    cursor: pointer;
+                }
             }
         }
     }
+
+    &-lt { left: 0; top: 0 }
+    &-rt { right: 0; top: 0 }
+    &-lb { left: 0; bottom: 0 }
+    &-rb { right: 0; bottom: 0 }
 }

@@ -11,12 +11,13 @@ import * as handler_math from './handlers/math.module.js'
 import * as handler_time from './handlers/time.module.js'
 
 const AUDIOREP = new handler_audio.handler( 'Audio' ),
-CANVASREP = new handler_canvas.handler( 'Canvas' ),
-FILEREP = new handler_file.handler( 'File' ),
-UIREP = new handler_ui.handler( 'UI' ),
-M3DREP = handler_m3d,
-MATHREP = new handler_math.handler( 'Math' ),
-TIMEREP = new handler_time.handler( 'Time' )
+    CANVASREP = new handler_canvas.handler( 'Canvas' ),
+    CURSORS = handler_ui.cursors,
+    FILEREP = new handler_file.handler( 'File' ),
+    UIREP = new handler_ui.handler( 'UI' ),
+    M3DREP = handler_m3d,
+    MATHREP = new handler_math.handler( 'Math' ),
+    TIMEREP = new handler_time.handler( 'Time' )
 
 M3DREP.geometry.buffer.default.prototype.computeBoundsTree = computeBoundsTree
 M3DREP.geometry.buffer.default.prototype.disposeBoundsTree = disposeBoundsTree
@@ -25,6 +26,7 @@ M3DREP.mesh.default.prototype.raycast = acceleratedRaycast
 export { 
     AUDIOREP, AUDIOREP as audio,
     CANVASREP, CANVASREP as canvas,
+    CURSORS, CURSORS as cursors,
     core,
     FILEREP, FILEREP as file, 
     UIREP, UIREP as ui, 
